@@ -4,7 +4,7 @@
 
 #include "RenderWindow.hpp"
 
-int main(int argc, char* argv[])
+void InitSDL()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -15,13 +15,20 @@ int main(int argc, char* argv[])
     {
         std::cout << "Error: IMG_Init has failed. Error message: " << SDL_GetError() << std::endl;
     }
+}
+
+int main(int argc, char* argv[])
+{
+    InitSDL();
 
     RenderWindow window("2048", 900, 900);
 
+    SDL_Texture* texture = window.LoadTexture("assets/gfx/goat.png");
+
     bool gameRunning = true;
+    SDL_Event event;
     while (gameRunning)
     {
-        SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
@@ -31,10 +38,10 @@ int main(int argc, char* argv[])
         }
 
         window.Clear();
+        window.Draw(texture);
         window.Update();
     }
 
     SDL_Quit();
-
     return 0;
 }
