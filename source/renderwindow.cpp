@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "RenderWindow.hpp"
+#include "Sprite.hpp"
 
 RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height) : width(p_width), height(p_height)
 {
@@ -24,6 +25,11 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height) : wid
     }
 }
 
+void RenderWindow::SetColor(int p_r, int p_g, int p_b, int p_a)
+{
+    SDL_SetRenderDrawColor(this->renderer, p_r, p_g, p_b, p_a);
+}
+
 SDL_Texture* RenderWindow::LoadTexture(const char* p_filePath)
 {
     SDL_Texture* texture = NULL;
@@ -42,21 +48,21 @@ void RenderWindow::Clear()
     SDL_RenderClear(this->renderer);
 }
 
-void RenderWindow::Draw(SDL_Texture* p_texture)
+void RenderWindow::Draw(Sprite p_sprite)
 {
     SDL_Rect source;
     source.x = 0;
     source.y = 0;
-    source.w = 32;
-    source.h = 32;
+    source.w = 64;
+    source.h = 64;
 
     SDL_Rect destination;
-    destination.x = this->width / 2 - 16;
-    destination.y = this->height / 2 - 16;
-    destination.w = 32;
-    destination.h = 32;
+    destination.x = p_sprite.x;
+    destination.y = p_sprite.y;
+    destination.w = p_sprite.width;
+    destination.h = p_sprite.height;
 
-    SDL_RenderCopy(this->renderer, p_texture, &source, &destination);
+    SDL_RenderCopy(this->renderer, p_sprite.texture, &source, &destination);
 }
 
 void RenderWindow::Update()

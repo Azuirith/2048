@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "RenderWindow.hpp"
+#include "Sprite.hpp"
 
 void InitSDL()
 {
@@ -23,7 +24,10 @@ int main(int argc, char* argv[])
 
     RenderWindow window("2048", 900, 900);
 
-    SDL_Texture* texture = window.LoadTexture("assets/gfx/goat.png");
+    Sprite gridBackground(150.f, 200.f, 600.f, 600.f);
+    gridBackground.texture = window.LoadTexture("assets/gfx/grid_background.png");
+
+    window.SetColor(250, 248, 239, 255);
 
     bool gameRunning = true;
     SDL_Event event;
@@ -38,7 +42,7 @@ int main(int argc, char* argv[])
         }
 
         window.Clear();
-        window.Draw(texture);
+        window.Draw(gridBackground);
         window.Update();
     }
 
