@@ -48,7 +48,7 @@ void RenderWindow::Clear()
     SDL_RenderClear(this->renderer);
 }
 
-void RenderWindow::Draw(Sprite p_sprite)
+void RenderWindow::Draw(Sprite* p_sprite)
 {
     SDL_Rect source;
     source.x = 0;
@@ -57,12 +57,12 @@ void RenderWindow::Draw(Sprite p_sprite)
     source.h = 64;
 
     SDL_Rect destination;
-    destination.x = p_sprite.x;
-    destination.y = p_sprite.y;
-    destination.w = p_sprite.width;
-    destination.h = p_sprite.height;
+    destination.x = p_sprite->x;
+    destination.y = p_sprite->y;
+    destination.w = p_sprite->width;
+    destination.h = p_sprite->height; 
 
-    SDL_RenderCopy(this->renderer, p_sprite.texture, &source, &destination);
+    SDL_RenderCopy(this->renderer, p_sprite->texture, &source, &destination);
 }
 
 void RenderWindow::Update()

@@ -12,7 +12,7 @@ public:
     SDL_Texture* LoadTexture(const char* p_filePath);
 
     void Clear();
-    void Draw(Sprite p_sprite);
+    void Draw(Sprite* p_sprite);
     void Update();
 
     const int width;
