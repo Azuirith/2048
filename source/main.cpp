@@ -62,7 +62,7 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
             {
                 if (!tiles[i][j]) continue;
 
-                int leftmostTile = 1;
+                int leftmostTile = 0;
                 while (leftmostTile < 3)
                 {
                     if (tiles[i][leftmostTile] == NULL)
@@ -88,27 +88,20 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
             {
                 if (!tiles[i][j]) continue;
 
-                if (tiles[0][j] == NULL)
+                int topmostTile = 0;
+                while (topmostTile < 3)
                 {
-                    tiles[0][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[0][j]->sprite->y = BORDER_VERTICAL + TILE_OFFSET;
-                    continue;
-                }
-
-                if (tiles[1][j] == NULL)
-                {
-                    tiles[1][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[1][j]->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * 2) + TILE_SIZE;
-                    continue;
-                }
-
-                if (tiles[2][j] == NULL)
-                {
-                    tiles[2][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[2][j]->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * 3) + (TILE_SIZE * 2);
+                    if (tiles[topmostTile][j] == NULL)
+                    {
+                        tiles[topmostTile][j] = tiles[i][j];
+                        tiles[i][j] = NULL;
+                        tiles[topmostTile][j]->sprite->y = BORDER_VERTICAL 
+                                                           + (TILE_OFFSET * (topmostTile + 1))
+                                                           + (TILE_SIZE * topmostTile);
+                        break;
+                    }
+                    
+                    topmostTile++;
                 }
             }
         }
@@ -121,27 +114,20 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
             {
                 if (!tiles[i][j]) continue;
 
-                if (tiles[3][j] == NULL)
+                int bottommostTile = 3;
+                while (bottommostTile > 0)
                 {
-                    tiles[3][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[3][j]->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * 4) + (TILE_SIZE * 3);
-                    continue;
-                }
+                    if (tiles[bottommostTile][j] == NULL)
+                    {
+                        tiles[bottommostTile][j] = tiles[i][j];
+                        tiles[i][j] = NULL;
+                        tiles[bottommostTile][j]->sprite->y = BORDER_VERTICAL 
+                                                           + (TILE_OFFSET * (bottommostTile + 1))
+                                                           + (TILE_SIZE * bottommostTile);
+                        break;
+                    }
 
-                if (tiles[2][j] == NULL)
-                {
-                    tiles[2][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[2][j]->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * 3) + (TILE_SIZE * 2);
-                    continue;
-                }
-
-                if (tiles[1][j] == NULL)
-                {
-                    tiles[1][j] = tiles[i][j];
-                    tiles[i][j] = NULL;
-                    tiles[1][j]->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * 2) + TILE_SIZE;
+                    bottommostTile--;
                 }
             }
         }
@@ -179,6 +165,11 @@ int main(int argc, char* argv[])
     tiles[0][0]->sprite->texture = window.LoadTexture("assets/gfx/square.png");
     tiles[0][0]->sprite->x = BORDER_HORIZONTAL + TILE_OFFSET;
     tiles[0][0]->sprite->y = BORDER_VERTICAL + TILE_OFFSET;
+
+    tiles[0][2] = new Tile(TILE_SIZE);
+    tiles[0][2]->sprite->texture = window.LoadTexture("assets/gfx/square.png");
+    tiles[0][2]->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * 3) + (TILE_SIZE * 2);
+    tiles[0][2]->sprite->y = BORDER_VERTICAL + TILE_OFFSET;
 
     window.SetColor(250, 248, 239, 255);
 
