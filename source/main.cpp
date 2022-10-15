@@ -22,7 +22,28 @@ enum MoveDirection
     RIGHT = 0, LEFT, UP, DOWN
 };
 
-void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
+void CreateTile(RenderWindow* window, Tile* tiles[4][4], int column, int row)
+{
+    tiles[column][row] = new Tile(TILE_SIZE);
+    Tile* newTile = tiles[column][row];
+    newTile->sprite->texture = window->LoadTexture("assets/gfx/square.png");
+    newTile->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row);
+    newTile->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column);
+}
+
+void UpdateTileSprite(RenderWindow* window, Tile* tile)
+{
+    if (tile->value == 4)
+    {
+        tile->sprite->texture = window->LoadTexture("assets/gfx/square2.png");
+    }
+    else if (tile->value == 8)
+    {
+        tile->sprite->texture = window->LoadTexture("assets/gfx/square3.png");
+    }
+}
+
+void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
 {
     // The different i and j limits are just so that the tiles in certain corners don't move at all
     // when certain directions are pressed
@@ -34,8 +55,10 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
             {         
                 if (!tiles[i][j]) continue;
 
-                // This chunk of code is a lot more compact than the original version but it also makes
-                // a lot less sense :)
+                // Loops through all possible tiles to the right to find the rightmost space that the current
+                // tile can move to or the rightmost tile that the current tile can combine wit. This chunk 
+                // of code is a lot more compact than the original version but it also makes a lot less sense
+                // when just looking at it. 
                 int rightmostTile = 3;
                 while (rightmostTile > 0)
                 {
@@ -48,8 +71,16 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
                                                            + (TILE_SIZE * rightmostTile);
                         break;
                     }
+                    else if (tiles[i][rightmostTile]->value == tiles[i][j]->value)
+                    {
+                        tiles[i][j] = NULL; 
+                        tiles[i][rightmostTile]->value = tiles[i][rightmostTile]->value * 2;
+                        UpdateTileSprite(window, tiles[i][rightmostTile]);       
+                        break;
+                    }
 
                     rightmostTile--;
+                    if (rightmostTile == j) break;
                 }
             }
         }
@@ -74,8 +105,16 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
                                                            + (TILE_SIZE * leftmostTile);
                         break;
                     }
+                    else if (tiles[i][leftmostTile]->value == tiles[i][j]->value)
+                    {
+                        tiles[i][j] = NULL; 
+                        tiles[i][leftmostTile]->value = tiles[i][leftmostTile]->value * 2;
+                        UpdateTileSprite(window, tiles[i][leftmostTile]);       
+                        break;
+                    }
                     
                     leftmostTile++;
+                    if (leftmostTile == j) break;
                 }
             }
         }
@@ -100,8 +139,16 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
                                                            + (TILE_SIZE * topmostTile);
                         break;
                     }
+                    else if (tiles[topmostTile][j]->value == tiles[i][j]->value)
+                    {
+                        tiles[i][j] = NULL; 
+                        tiles[topmostTile][j]->value = tiles[topmostTile][j]->value * 2;
+                        UpdateTileSprite(window, tiles[topmostTile][j]);        
+                        break;
+                    }
                     
                     topmostTile++;
+                    if (topmostTile == i) break;
                 }
             }
         }
@@ -126,8 +173,16 @@ void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
                                                            + (TILE_SIZE * bottommostTile);
                         break;
                     }
+                    else if (tiles[bottommostTile][j]->value == tiles[i][j]->value)
+                    {
+                        tiles[i][j] = NULL; 
+                        tiles[bottommostTile][j]->value = tiles[bottommostTile][j]->value * 2;
+                        UpdateTileSprite(window, tiles[bottommostTile][j]);
+                        break;
+                    }
 
                     bottommostTile--;
+                    if (bottommostTile == i) break;
                 }
             }
         }
@@ -161,15 +216,10 @@ int main(int argc, char* argv[])
                          {NULL, NULL, NULL, NULL},
                          {NULL, NULL, NULL, NULL}};
 
-    tiles[0][0] = new Tile(TILE_SIZE);
-    tiles[0][0]->sprite->texture = window.LoadTexture("assets/gfx/square.png");
-    tiles[0][0]->sprite->x = BORDER_HORIZONTAL + TILE_OFFSET;
-    tiles[0][0]->sprite->y = BORDER_VERTICAL + TILE_OFFSET;
-
-    tiles[0][2] = new Tile(TILE_SIZE);
-    tiles[0][2]->sprite->texture = window.LoadTexture("assets/gfx/square.png");
-    tiles[0][2]->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * 3) + (TILE_SIZE * 2);
-    tiles[0][2]->sprite->y = BORDER_VERTICAL + TILE_OFFSET;
+    CreateTile(&window, tiles, 0, 0);
+    CreateTile(&window, tiles, 1, 0);
+    CreateTile(&window, tiles, 2, 0);
+    CreateTile(&window, tiles, 2, 2);
 
     window.SetColor(250, 248, 239, 255);
 
@@ -187,13 +237,13 @@ int main(int argc, char* argv[])
             {
                 // Registers both WASD and arrow keys
                 if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    MoveTiles(tiles, MoveDirection::UP);
+                    MoveTiles(&window, tiles, MoveDirection::UP);
                 else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    MoveTiles(tiles, MoveDirection::LEFT);
+                    MoveTiles(&window, tiles, MoveDirection::LEFT);
                 else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    MoveTiles(tiles, MoveDirection::DOWN);
+                    MoveTiles(&window, tiles, MoveDirection::DOWN);
                 else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    MoveTiles(tiles, MoveDirection::RIGHT);
+                    MoveTiles(&window, tiles, MoveDirection::RIGHT);
             }
         }
 

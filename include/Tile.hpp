@@ -8,4 +8,6 @@ public:
     Tile(float p_tileSize);
 
     Sprite* sprite;
+
+    int value = 2;
 };
