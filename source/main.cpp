@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
+#include <map>
 
 #include "RenderWindow.hpp"
 #include "Sprite.hpp"
@@ -17,33 +18,30 @@ const float BORDER_HEIGHT = 600.f;
 const float TILE_OFFSET = 25.f;
 const float TILE_SIZE = (BORDER_WIDTH / 4.f) - ((5.f / 4.f) * TILE_OFFSET);
 
-enum MoveDirection
+std::map<int, SDL_Texture*> tileSprites;
+
+void LoadTileSprites(RenderWindow& window)
 {
-    RIGHT = 0, LEFT, UP, DOWN
-};
+    tileSprites[2] = window.LoadTexture("assets/gfx/square.png");
+    tileSprites[4] = window.LoadTexture("assets/gfx/square2.png");
+    tileSprites[8] = window.LoadTexture("assets/gfx/square3.png");
+}
 
 void CreateTile(RenderWindow* window, Tile* tiles[4][4], int column, int row)
 {
     tiles[column][row] = new Tile(TILE_SIZE);
     Tile* newTile = tiles[column][row];
-    newTile->sprite->texture = window->LoadTexture("assets/gfx/square.png");
+    newTile->sprite->texture = tileSprites[2];
     newTile->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row);
     newTile->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column);
 }
 
-void UpdateTileSprite(RenderWindow* window, Tile* tile)
+enum MoveDirection
 {
-    if (tile->value == 4)
-    {
-        tile->sprite->texture = window->LoadTexture("assets/gfx/square2.png");
-    }
-    else if (tile->value == 8)
-    {
-        tile->sprite->texture = window->LoadTexture("assets/gfx/square3.png");
-    }
-}
+    RIGHT = 0, LEFT, UP, DOWN
+};
 
-void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
+void MoveTiles(Tile* tiles[4][4], MoveDirection direction)
 {
     // The different i and j limits are just so that the tiles in certain corners don't move at all
     // when certain directions are pressed
@@ -73,9 +71,10 @@ void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
                     }
                     else if (tiles[i][rightmostTile]->value == tiles[i][j]->value)
                     {
+                        int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
-                        tiles[i][rightmostTile]->value = tiles[i][rightmostTile]->value * 2;
-                        UpdateTileSprite(window, tiles[i][rightmostTile]);       
+                        tiles[i][rightmostTile]->value = newTileValue;
+                        tiles[i][rightmostTile]->sprite->texture = tileSprites[newTileValue];   
                         break;
                     }
 
@@ -107,9 +106,10 @@ void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
                     }
                     else if (tiles[i][leftmostTile]->value == tiles[i][j]->value)
                     {
+                        int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
-                        tiles[i][leftmostTile]->value = tiles[i][leftmostTile]->value * 2;
-                        UpdateTileSprite(window, tiles[i][leftmostTile]);       
+                        tiles[i][leftmostTile]->value = newTileValue;
+                        tiles[i][leftmostTile]->sprite->texture = tileSprites[newTileValue];    
                         break;
                     }
                     
@@ -141,9 +141,10 @@ void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
                     }
                     else if (tiles[topmostTile][j]->value == tiles[i][j]->value)
                     {
+                        int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
-                        tiles[topmostTile][j]->value = tiles[topmostTile][j]->value * 2;
-                        UpdateTileSprite(window, tiles[topmostTile][j]);        
+                        tiles[topmostTile][j]->value = newTileValue;
+                        tiles[topmostTile][j]->sprite->texture = tileSprites[newTileValue];          
                         break;
                     }
                     
@@ -175,9 +176,10 @@ void MoveTiles(RenderWindow* window, Tile* tiles[4][4], MoveDirection direction)
                     }
                     else if (tiles[bottommostTile][j]->value == tiles[i][j]->value)
                     {
+                        int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
-                        tiles[bottommostTile][j]->value = tiles[bottommostTile][j]->value * 2;
-                        UpdateTileSprite(window, tiles[bottommostTile][j]);
+                        tiles[bottommostTile][j]->value = newTileValue;
+                        tiles[bottommostTile][j]->sprite->texture = tileSprites[newTileValue];  
                         break;
                     }
 
@@ -207,6 +209,9 @@ int main(int argc, char* argv[])
     InitSDL();
 
     RenderWindow window("2048", WINDOW_WIDTH, WINDOW_HEIGHT);
+    window.SetColor(250, 248, 239, 255);
+    
+    LoadTileSprites(window);
 
     Sprite gridBackground(BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_WIDTH, BORDER_HEIGHT);
     gridBackground.texture = window.LoadTexture("assets/gfx/grid_background.png");
@@ -220,8 +225,6 @@ int main(int argc, char* argv[])
     CreateTile(&window, tiles, 1, 0);
     CreateTile(&window, tiles, 2, 0);
     CreateTile(&window, tiles, 2, 2);
-
-    window.SetColor(250, 248, 239, 255);
 
     bool gameRunning = true;
     SDL_Event event;
@@ -237,13 +240,13 @@ int main(int argc, char* argv[])
             {
                 // Registers both WASD and arrow keys
                 if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    MoveTiles(&window, tiles, MoveDirection::UP);
+                    MoveTiles(tiles, MoveDirection::UP);
                 else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    MoveTiles(&window, tiles, MoveDirection::LEFT);
+                    MoveTiles(tiles, MoveDirection::LEFT);
                 else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    MoveTiles(&window, tiles, MoveDirection::DOWN);
+                    MoveTiles(tiles, MoveDirection::DOWN);
                 else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    MoveTiles(&window, tiles, MoveDirection::RIGHT);
+                    MoveTiles(tiles, MoveDirection::RIGHT);
             }
         }
 
