@@ -21,7 +21,7 @@ public:
     void MoveTiles(MoveDirection direction);
 public:
     Sprite* gridBackgroundSprite;
-
+    
     Tile* tiles[4][4] = {};
 private:
     const float BORDER_HORIZONTAL = 150.f;
