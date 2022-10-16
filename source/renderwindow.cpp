@@ -13,21 +13,17 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height) : wid
                               0);
 
     if (window == NULL)
-    {
         std::cout << "Error: Window has failed to init. Error message: " << SDL_GetError() << std::endl;
-    }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if (renderer == NULL)
-    {
         std::cout << "Error: Renderer has failed to init. Error message: " << SDL_GetError() << std::endl;
-    }
 }
 
 void RenderWindow::SetColor(int p_r, int p_g, int p_b, int p_a)
 {
-    SDL_SetRenderDrawColor(this->renderer, p_r, p_g, p_b, p_a);
+    SDL_SetRenderDrawColor(renderer, p_r, p_g, p_b, p_a);
 }
 
 SDL_Texture* RenderWindow::LoadTexture(const char* p_filePath)
@@ -36,16 +32,14 @@ SDL_Texture* RenderWindow::LoadTexture(const char* p_filePath)
     texture = IMG_LoadTexture(renderer, p_filePath);
 
     if (texture == NULL)
-    {
         std::cout << "Error: Texture has failed to load. Error message: " << SDL_GetError() << std::endl;
-    }
 
     return texture;
 }
 
 void RenderWindow::Clear()
 {
-    SDL_RenderClear(this->renderer);
+    SDL_RenderClear(renderer);
 }
 
 void RenderWindow::Draw(Sprite* p_sprite)
@@ -62,10 +56,10 @@ void RenderWindow::Draw(Sprite* p_sprite)
     destination.w = p_sprite->width;
     destination.h = p_sprite->height; 
 
-    SDL_RenderCopy(this->renderer, p_sprite->texture, &source, &destination);
+    SDL_RenderCopy(renderer, p_sprite->texture, &source, &destination);
 }
 
 void RenderWindow::Update()
 {
-    SDL_RenderPresent(this->renderer);
+    SDL_RenderPresent(renderer);
 }
