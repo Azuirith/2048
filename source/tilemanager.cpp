@@ -1,5 +1,6 @@
-#include <map>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 #include "TileManager.hpp"
 #include "RenderWindow.hpp"
@@ -7,9 +8,13 @@
 
 TileManager::TileManager(RenderWindow& window)
 {
+    srand(time(0)); // For the random tile spawning
     gridBackgroundSprite = new Sprite(BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_WIDTH, BORDER_HEIGHT);
     gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/gridBackground.png");
     LoadTileSprites(window);
+    SpawnRandomTile();
+    SpawnRandomTile();
+    currentTiles = 2;
 }
 
 void TileManager::LoadTileSprites(RenderWindow& window)
@@ -18,6 +23,11 @@ void TileManager::LoadTileSprites(RenderWindow& window)
     tileSprites[4] = window.LoadTexture("assets/gfx/square2.png");
     tileSprites[8] = window.LoadTexture("assets/gfx/square3.png");
     tileSprites[16] = window.LoadTexture("assets/gfx/square4.png");
+    tileSprites[32] = window.LoadTexture("assets/gfx/square5.png");
+    tileSprites[64] = window.LoadTexture("assets/gfx/square6.png"); 
+    tileSprites[128] = window.LoadTexture("assets/gfx/square7.png");   
+    tileSprites[256] = window.LoadTexture("assets/gfx/square8.png");
+    tileSprites[512] = window.LoadTexture("assets/gfx/square9.png");
 }
 
 void TileManager::CreateTile(int column, int row)
@@ -37,15 +47,16 @@ void TileManager::MoveTiles(MoveDirection direction)
     {
         for (int i = 0; i < 4; i++)
         {
+            int rightmostTile = 3;
+            bool rightmostTileHasChanged = false;
             for (int j = 2; j >= 0; j--)
             {         
                 if (!tiles[i][j]) continue;
  
                 // Loops through all possible tiles to the right to find the rightmost space that the current
-                // tile can move to or the rightmost tile that the current tile can combine wit. This chunk 
-                // of code is a lot more compact than the original version but it also makes a lot less sense
-                // when just looking at it. 
-                int rightmostTile = 3;
+                // tile can move to or the rightmost tile that the current tile can combine with 
+                // This chunk of code is a lot more compact than the original version but it also makes a lot 
+                // less sense when just looking at it
                 while (rightmostTile > 0)
                 {
                     if (tiles[i][rightmostTile] == NULL)
@@ -59,8 +70,15 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[i][rightmostTile]->value == tiles[i][j]->value)
                     {
+                        if (rightmostTile == 0) 
+                        {
+                            if (rightmostTileHasChanged) continue;
+                            else rightmostTileHasChanged = true;
+                        } 
+                     
                         int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
+                        currentTiles--;
                         tiles[i][rightmostTile]->value = newTileValue;
                         tiles[i][rightmostTile]->sprite->texture = tileSprites[newTileValue];   
                         break;
@@ -76,11 +94,13 @@ void TileManager::MoveTiles(MoveDirection direction)
     {
         for (int i = 0; i < 4; i++)
         {
+            int leftmostTile = 0;
+            bool leftmostTileHasChanged = false; // This is to prevent an issue where a tile could increase
+            // value twice in one move
             for (int j = 1; j < 4; j++)
             {
                 if (!tiles[i][j]) continue;
 
-                int leftmostTile = 0;
                 while (leftmostTile < 3)
                 {
                     if (tiles[i][leftmostTile] == NULL)
@@ -92,10 +112,19 @@ void TileManager::MoveTiles(MoveDirection direction)
                                                            + (TILE_SIZE * leftmostTile);
                         break;
                     }
+                    // Checks if leftmost tile or the tile directly to the left of the current tile
+                    // has the same value
                     else if (tiles[i][leftmostTile]->value == tiles[i][j]->value)
                     {
+                        if (leftmostTile == 0) 
+                        {
+                            if (leftmostTileHasChanged) continue;
+                            else leftmostTileHasChanged = true;
+                        } 
+
                         int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
+                        currentTiles--;
                         tiles[i][leftmostTile]->value = newTileValue;
                         tiles[i][leftmostTile]->sprite->texture = tileSprites[newTileValue];    
                         break;
@@ -109,13 +138,16 @@ void TileManager::MoveTiles(MoveDirection direction)
     }
     else if (direction == MoveDirection::UP)
     {
-        for (int i = 1; i < 4; i++)
+        // I reverse the order of the loop in the UP logic and the DOWN logic so that it loops over the tiles 
+        // in the same way that it does with the RIGHT direction and the LEFT direction
+        for (int j = 0; j < 4; j++)
         {
-            for (int j = 0; j < 4; j++)
+            int topmostTile = 0;
+            bool topmostTileHasChanged = false;
+            for (int i = 1; i < 4; i++)
             {
                 if (!tiles[i][j]) continue;
 
-                int topmostTile = 0;
                 while (topmostTile < 3)
                 {
                     if (tiles[topmostTile][j] == NULL)
@@ -129,8 +161,15 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[topmostTile][j]->value == tiles[i][j]->value)
                     {
+                        if (topmostTile == 0) 
+                        {
+                            if (topmostTileHasChanged) continue;
+                            else topmostTileHasChanged = true;
+                        } 
+
                         int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
+                        currentTiles--;
                         tiles[topmostTile][j]->value = newTileValue;
                         tiles[topmostTile][j]->sprite->texture = tileSprites[newTileValue];          
                         break;
@@ -144,13 +183,14 @@ void TileManager::MoveTiles(MoveDirection direction)
     }
     else if (direction == MoveDirection::DOWN)
     {
-        for (int i = 2; i >= 0; i--)
+        for (int j = 0; j < 4; j++)
         {
-            for (int j = 0; j < 4; j++)
+            int bottommostTile = 3;
+            bool bottommostTileHasChanged = false;
+            for (int i = 2; i >= 0; i--)
             {
                 if (!tiles[i][j]) continue;
 
-                int bottommostTile = 3;
                 while (bottommostTile > 0)
                 {
                     if (tiles[bottommostTile][j] == NULL)
@@ -164,8 +204,15 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[bottommostTile][j]->value == tiles[i][j]->value)
                     {
+                        if (bottommostTile == 0) 
+                        {
+                            if (bottommostTileHasChanged) continue;
+                            else bottommostTileHasChanged = true;
+                        } 
+
                         int newTileValue = tiles[i][j]->value * 2;
                         tiles[i][j] = NULL; 
+                        currentTiles--;
                         tiles[bottommostTile][j]->value = newTileValue;
                         tiles[bottommostTile][j]->sprite->texture = tileSprites[newTileValue];  
                         break;
@@ -176,5 +223,26 @@ void TileManager::MoveTiles(MoveDirection direction)
                 }
             }
         }
+    }
+
+    if (currentTiles < 16) SpawnRandomTile();
+    else std::cout << "Game over" << std::endl;
+}
+
+void TileManager::SpawnRandomTile()
+{
+    int randomColumn = rand() % 4;
+    int randomRow = rand() % 4;
+    std::cout << ++timesLooped << std::endl;
+
+    if (tiles[randomColumn][randomRow]) 
+    {
+        SpawnRandomTile();
+    }
+    else
+    { 
+        CreateTile(randomColumn, randomRow);
+        timesLooped = 0;
+        currentTiles++;
     }
 }

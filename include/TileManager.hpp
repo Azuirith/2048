@@ -24,6 +24,8 @@ public:
     
     Tile* tiles[4][4] = {};
 private:
+    void SpawnRandomTile();
+private:
     const float BORDER_HORIZONTAL = 150.f;
     const float BORDER_VERTICAL = 200.f;
     const float BORDER_WIDTH = 600.f;
@@ -32,4 +34,7 @@ private:
     const float TILE_SIZE = (BORDER_WIDTH / 4.f) - ((5.f / 4.f) * TILE_OFFSET);
 
     std::map<int, SDL_Texture*> tileSprites;
+
+    int timesLooped = 0;
+    int currentTiles = 0;
 };

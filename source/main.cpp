@@ -8,8 +8,8 @@
 #include "Tile.hpp"
 #include "TileManager.hpp"
 
-const int WINDOW_WIDTH = 900;
-const int WINDOW_HEIGHT = 900;
+#define WINDOW_WIDTH 900
+#define WINDOW_HEIGHT 900
 
 void InitSDL()
 {
@@ -28,14 +28,6 @@ int main(int argc, char* argv[])
     window.SetColor(250, 248, 239, 255);
 
     TileManager tileManager(window);
-    tileManager.CreateTile(0, 0);
-    tileManager.CreateTile(0, 2);
-    tileManager.CreateTile(1, 0);
-    tileManager.CreateTile(1, 3);
-    tileManager.CreateTile(2, 0);
-    tileManager.CreateTile(2, 2);
-    tileManager.CreateTile(3, 2);
-    tileManager.CreateTile(3, 3);
 
     bool gameRunning = true;
     SDL_Event event;
@@ -45,6 +37,7 @@ int main(int argc, char* argv[])
         {
             if (event.type == SDL_QUIT) 
             {
+                std::cout << SDL_GetError() << std::endl;
                 gameRunning = false;
             }
             else if (event.type == SDL_KEYDOWN)
