@@ -30,13 +30,13 @@ void TileManager::LoadTileSprites(RenderWindow& window)
     tileSprites[512] = window.LoadTexture("assets/gfx/square9.png");
 }
 
-void TileManager::CreateTile(int column, int row)
+void TileManager::CreateTile(int row, int column)
 {
-    tiles[column][row] = new Tile(TILE_SIZE);
-    Tile* newTile = tiles[column][row];
+    tiles[row][column] = new Tile(TILE_SIZE);
+    Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
-    newTile->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row);
-    newTile->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column);
+    newTile->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column);
+    newTile->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row);
 }
 
 void TileManager::MoveTiles(MoveDirection direction)
@@ -45,195 +45,179 @@ void TileManager::MoveTiles(MoveDirection direction)
     // when certain directions are pressed
     if (direction == MoveDirection::RIGHT)
     {
-        for (int i = 0; i < 4; i++)
+        for (int row = 0; row < 4; row++)
         {
             int rightmostTile = 3;
-            bool rightmostTileHasChanged = false;
-            for (int j = 2; j >= 0; j--)
+            for (int column = 2; column >= 0; column--)
             {         
-                if (!tiles[i][j]) continue;
- 
+                if (!tiles[row][column]) continue;
+
                 // Loops through all possible tiles to the right to find the rightmost space that the current
                 // tile can move to or the rightmost tile that the current tile can combine with 
                 // This chunk of code is a lot more compact than the original version but it also makes a lot 
                 // less sense when just looking at it
-                while (rightmostTile > 0)
+                while (rightmostTile > column)
                 {
-                    if (tiles[i][rightmostTile] == NULL)
+                    if (tiles[row][rightmostTile] == NULL)
                     {
-                        tiles[i][rightmostTile] = tiles[i][j];
-                        tiles[i][j] = NULL;
-                        tiles[i][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
-                                                           + (TILE_OFFSET * (rightmostTile + 1))
-                                                           + (TILE_SIZE * rightmostTile);
+                        tiles[row][rightmostTile] = tiles[row][column];
+                        tiles[row][column] = NULL;
+                        tiles[row][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
+                                                                + (TILE_OFFSET * (rightmostTile + 1))
+                                                                + (TILE_SIZE * rightmostTile);
                         break;
                     }
-                    else if (tiles[i][rightmostTile]->value == tiles[i][j]->value)
+                    else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
                     {
-                        if (rightmostTile == 0) 
-                        {
-                            if (rightmostTileHasChanged) continue;
-                            else rightmostTileHasChanged = true;
-                        } 
-                     
-                        int newTileValue = tiles[i][j]->value * 2;
-                        tiles[i][j] = NULL; 
+                        int newTileValue = tiles[row][column]->value * 2;
+                        delete tiles[row][column];
+                        tiles[row][column] = NULL; 
                         currentTiles--;
-                        tiles[i][rightmostTile]->value = newTileValue;
-                        tiles[i][rightmostTile]->sprite->texture = tileSprites[newTileValue];   
+                        tiles[row][rightmostTile]->value = newTileValue;
+                        tiles[row][rightmostTile]->sprite->texture = tileSprites[newTileValue]; 
+
+                        if (rightmostTile == 3) rightmostTile--;
                         break;
                     }
 
                     rightmostTile--;
-                    if (rightmostTile == j) break;
                 }
             }
         }
     }
     else if (direction == MoveDirection::LEFT)
     {
-        for (int i = 0; i < 4; i++)
+        for (int row = 0; row < 4; row++)
         {
             int leftmostTile = 0;
-            bool leftmostTileHasChanged = false; // This is to prevent an issue where a tile could increase
-            // value twice in one move
-            for (int j = 1; j < 4; j++)
+            for (int column = 1; column < 4; column++)
             {
-                if (!tiles[i][j]) continue;
+                if (!tiles[row][column]) continue;
 
-                while (leftmostTile < 3)
+                while (leftmostTile < column)
                 {
-                    if (tiles[i][leftmostTile] == NULL)
+                    if (tiles[row][leftmostTile] == NULL)
                     {
-                        tiles[i][leftmostTile] = tiles[i][j];
-                        tiles[i][j] = NULL;
-                        tiles[i][leftmostTile]->sprite->x = BORDER_HORIZONTAL 
+                        tiles[row][leftmostTile] = tiles[row][column];
+                        tiles[row][column] = NULL;
+                        tiles[row][leftmostTile]->sprite->x = BORDER_HORIZONTAL 
                                                            + (TILE_OFFSET * (leftmostTile + 1))
                                                            + (TILE_SIZE * leftmostTile);
                         break;
                     }
                     // Checks if leftmost tile or the tile directly to the left of the current tile
                     // has the same value
-                    else if (tiles[i][leftmostTile]->value == tiles[i][j]->value)
+                    else if (tiles[row][leftmostTile]->value == tiles[row][column]->value)
                     {
-                        if (leftmostTile == 0) 
-                        {
-                            if (leftmostTileHasChanged) continue;
-                            else leftmostTileHasChanged = true;
-                        } 
-
-                        int newTileValue = tiles[i][j]->value * 2;
-                        tiles[i][j] = NULL; 
+                        int newTileValue = tiles[row][column]->value * 2;
+                        delete tiles[row][column];
+                        tiles[row][column] = NULL; 
                         currentTiles--;
-                        tiles[i][leftmostTile]->value = newTileValue;
-                        tiles[i][leftmostTile]->sprite->texture = tileSprites[newTileValue];    
+                        tiles[row][leftmostTile]->value = newTileValue;
+                        tiles[row][leftmostTile]->sprite->texture = tileSprites[newTileValue]; 
+
+                        if (leftmostTile == 0) leftmostTile++;   
                         break;
                     }
                     
                     leftmostTile++;
-                    if (leftmostTile == j) break;
                 }
             }
         }
     }
     else if (direction == MoveDirection::UP)
     {
-        // I reverse the order of the loop in the UP logic and the DOWN logic so that it loops over the tiles 
+        // I reversed the order of the loop in the UP logic and the DOWN logic so that it loops over the tiles 
         // in the same way that it does with the RIGHT direction and the LEFT direction
-        for (int j = 0; j < 4; j++)
+        for (int column = 0; column < 4; column++)
         {
             int topmostTile = 0;
-            bool topmostTileHasChanged = false;
-            for (int i = 1; i < 4; i++)
+            for (int row = 1; row < 4; row++)
             {
-                if (!tiles[i][j]) continue;
+                if (!tiles[row][column]) continue;
 
-                while (topmostTile < 3)
+                while (topmostTile < row)
                 {
-                    if (tiles[topmostTile][j] == NULL)
+                    if (tiles[topmostTile][column] == NULL)
                     {
-                        tiles[topmostTile][j] = tiles[i][j];
-                        tiles[i][j] = NULL;
-                        tiles[topmostTile][j]->sprite->y = BORDER_VERTICAL 
+                        tiles[topmostTile][column] = tiles[row][column];
+                        tiles[row][column] = NULL;
+                        tiles[topmostTile][column]->sprite->y = BORDER_VERTICAL 
                                                            + (TILE_OFFSET * (topmostTile + 1))
                                                            + (TILE_SIZE * topmostTile);
                         break;
                     }
-                    else if (tiles[topmostTile][j]->value == tiles[i][j]->value)
+                    else if (tiles[topmostTile][column]->value == tiles[row][column]->value)
                     {
-                        if (topmostTile == 0) 
-                        {
-                            if (topmostTileHasChanged) continue;
-                            else topmostTileHasChanged = true;
-                        } 
-
-                        int newTileValue = tiles[i][j]->value * 2;
-                        tiles[i][j] = NULL; 
+                        int newTileValue = tiles[row][column]->value * 2;
+                        delete tiles[row][column];
+                        tiles[row][column] = NULL; 
                         currentTiles--;
-                        tiles[topmostTile][j]->value = newTileValue;
-                        tiles[topmostTile][j]->sprite->texture = tileSprites[newTileValue];          
+                        tiles[topmostTile][column]->value = newTileValue;
+                        tiles[topmostTile][column]->sprite->texture = tileSprites[newTileValue]; 
+
+                        if (topmostTile == 0) topmostTile++;         
                         break;
                     }
                     
                     topmostTile++;
-                    if (topmostTile == i) break;
                 }
             }
         }
     }
     else if (direction == MoveDirection::DOWN)
     {
-        for (int j = 0; j < 4; j++)
+        for (int column = 0; column < 4; column++)
         {
             int bottommostTile = 3;
-            bool bottommostTileHasChanged = false;
-            for (int i = 2; i >= 0; i--)
+            for (int row = 2; row >= 0; row--)
             {
-                if (!tiles[i][j]) continue;
+                if (!tiles[row][column]) continue;
 
-                while (bottommostTile > 0)
+                while (bottommostTile > row)
                 {
-                    if (tiles[bottommostTile][j] == NULL)
+                    if (tiles[bottommostTile][column] == NULL)
                     {
-                        tiles[bottommostTile][j] = tiles[i][j];
-                        tiles[i][j] = NULL;
-                        tiles[bottommostTile][j]->sprite->y = BORDER_VERTICAL 
+                        tiles[bottommostTile][column] = tiles[row][column];
+                        tiles[row][column] = NULL;
+                        tiles[bottommostTile][column]->sprite->y = BORDER_VERTICAL 
                                                            + (TILE_OFFSET * (bottommostTile + 1))
                                                            + (TILE_SIZE * bottommostTile);
                         break;
                     }
-                    else if (tiles[bottommostTile][j]->value == tiles[i][j]->value)
+                    else if (tiles[bottommostTile][column]->value == tiles[row][column]->value)
                     {
-                        if (bottommostTile == 0) 
-                        {
-                            if (bottommostTileHasChanged) continue;
-                            else bottommostTileHasChanged = true;
-                        } 
-
-                        int newTileValue = tiles[i][j]->value * 2;
-                        tiles[i][j] = NULL; 
+                        int newTileValue = tiles[row][column]->value * 2;
+                        delete tiles[row][column];
+                        tiles[row][column] = NULL; 
                         currentTiles--;
-                        tiles[bottommostTile][j]->value = newTileValue;
-                        tiles[bottommostTile][j]->sprite->texture = tileSprites[newTileValue];  
+                        tiles[bottommostTile][column]->value = newTileValue;
+                        tiles[bottommostTile][column]->sprite->texture = tileSprites[newTileValue];  
+
+                        if (bottommostTile == 3) bottommostTile--;
                         break;
                     }
 
                     bottommostTile--;
-                    if (bottommostTile == i) break;
                 }
             }
         }
     }
 
-    if (currentTiles < 16) SpawnRandomTile();
-    else std::cout << "Game over" << std::endl;
+    if (currentTiles < 16) 
+    {
+        SpawnRandomTile();
+    }
+    else
+    {
+
+    }
 }
 
 void TileManager::SpawnRandomTile()
 {
     int randomColumn = rand() % 4;
     int randomRow = rand() % 4;
-    std::cout << ++timesLooped << std::endl;
 
     if (tiles[randomColumn][randomRow]) 
     {

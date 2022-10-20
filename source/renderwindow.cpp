@@ -47,8 +47,8 @@ void RenderWindow::Draw(Sprite* p_sprite)
     SDL_Rect source;
     source.x = 0;
     source.y = 0;
-    source.w = 64;
-    source.h = 64;
+    source.w = 128;
+    source.h = 128;
 
     SDL_Rect destination;
     destination.x = p_sprite->x;
