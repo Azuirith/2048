@@ -35,6 +35,5 @@ private:
 
     std::map<int, SDL_Texture*> tileSprites;
 
-    int timesLooped = 0;
     int currentTiles = 0;
 };

@@ -41,8 +41,8 @@ void TileManager::CreateTile(int row, int column)
 
 void TileManager::MoveTiles(MoveDirection direction)
 {   
-    // The different i and j limits are just so that the tiles in certain corners don't move at all
-    // when certain directions are pressed
+    bool tilesMoved = false; // Used for figuring out if a new tile should be spawned
+
     if (direction == MoveDirection::RIGHT)
     {
         for (int row = 0; row < 4; row++)
@@ -60,6 +60,8 @@ void TileManager::MoveTiles(MoveDirection direction)
                 {
                     if (tiles[row][rightmostTile] == NULL)
                     {
+                        tilesMoved = true;
+
                         tiles[row][rightmostTile] = tiles[row][column];
                         tiles[row][column] = NULL;
                         tiles[row][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
@@ -69,17 +71,21 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
                     {
+                        tilesMoved = true;
+
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         currentTiles--;
+
                         tiles[row][rightmostTile]->value = newTileValue;
                         tiles[row][rightmostTile]->sprite->texture = tileSprites[newTileValue]; 
 
-                        if (rightmostTile == 3) rightmostTile--;
+                        if (rightmostTile == 3) rightmostTile--; // Done so that the rightmost tile can't change
+                        // values twice in one move
                         break;
                     }
-
+        
                     rightmostTile--;
                 }
             }
@@ -98,6 +104,8 @@ void TileManager::MoveTiles(MoveDirection direction)
                 {
                     if (tiles[row][leftmostTile] == NULL)
                     {
+                        tilesMoved = true;
+
                         tiles[row][leftmostTile] = tiles[row][column];
                         tiles[row][column] = NULL;
                         tiles[row][leftmostTile]->sprite->x = BORDER_HORIZONTAL 
@@ -109,10 +117,13 @@ void TileManager::MoveTiles(MoveDirection direction)
                     // has the same value
                     else if (tiles[row][leftmostTile]->value == tiles[row][column]->value)
                     {
+                        tilesMoved = true;
+
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         currentTiles--;
+
                         tiles[row][leftmostTile]->value = newTileValue;
                         tiles[row][leftmostTile]->sprite->texture = tileSprites[newTileValue]; 
 
@@ -140,6 +151,8 @@ void TileManager::MoveTiles(MoveDirection direction)
                 {
                     if (tiles[topmostTile][column] == NULL)
                     {
+                        tilesMoved = true;
+
                         tiles[topmostTile][column] = tiles[row][column];
                         tiles[row][column] = NULL;
                         tiles[topmostTile][column]->sprite->y = BORDER_VERTICAL 
@@ -149,10 +162,13 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[topmostTile][column]->value == tiles[row][column]->value)
                     {
+                        tilesMoved = true;
+
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         currentTiles--;
+
                         tiles[topmostTile][column]->value = newTileValue;
                         tiles[topmostTile][column]->sprite->texture = tileSprites[newTileValue]; 
 
@@ -178,6 +194,8 @@ void TileManager::MoveTiles(MoveDirection direction)
                 {
                     if (tiles[bottommostTile][column] == NULL)
                     {
+                        tilesMoved = true;
+
                         tiles[bottommostTile][column] = tiles[row][column];
                         tiles[row][column] = NULL;
                         tiles[bottommostTile][column]->sprite->y = BORDER_VERTICAL 
@@ -187,14 +205,17 @@ void TileManager::MoveTiles(MoveDirection direction)
                     }
                     else if (tiles[bottommostTile][column]->value == tiles[row][column]->value)
                     {
+                        tilesMoved = true;
+
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         currentTiles--;
+
                         tiles[bottommostTile][column]->value = newTileValue;
                         tiles[bottommostTile][column]->sprite->texture = tileSprites[newTileValue];  
 
-                        if (bottommostTile == 3) bottommostTile--;
+                        if (bottommostTile == 3) bottommostTile--; 
                         break;
                     }
 
@@ -204,13 +225,9 @@ void TileManager::MoveTiles(MoveDirection direction)
         }
     }
 
-    if (currentTiles < 16) 
+    if (currentTiles < 16 && tilesMoved) 
     {
         SpawnRandomTile();
-    }
-    else
-    {
-
     }
 }
 
@@ -226,7 +243,6 @@ void TileManager::SpawnRandomTile()
     else
     { 
         CreateTile(randomColumn, randomRow);
-        timesLooped = 0;
         currentTiles++;
     }
 }
