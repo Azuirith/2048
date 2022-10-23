@@ -11,7 +11,7 @@ TileManager::TileManager(RenderWindow& window)
     srand(time(0)); // For the random tile spawning
 
     gridBackgroundSprite = new Sprite(BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_WIDTH, BORDER_HEIGHT);
-    gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/gridBackground.png");
+    gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/grid_background.png");
 
     for (int row = 0; row < 4; row++)
     {
@@ -21,7 +21,7 @@ TileManager::TileManager(RenderWindow& window)
                                                  BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
                                                  TILE_SIZE,
                                                  TILE_SIZE);  
-            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/emptysquare.png");
+            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/grid_space.png");
         }
     }
 
@@ -31,24 +31,35 @@ TileManager::TileManager(RenderWindow& window)
     tileCount = 2;
 }
 
+TileManager::~TileManager()
+{
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            delete tiles[row][column];
+            delete gridSpaces[row][column];
+        }
+    }
+}
+
 void TileManager::LoadTileSprites(RenderWindow& window)
 {
-    tileSprites[2] = window.LoadTexture("assets/gfx/square.png");
-    tileSprites[4] = window.LoadTexture("assets/gfx/square2.png");
-    tileSprites[8] = window.LoadTexture("assets/gfx/square3.png");
-    tileSprites[16] = window.LoadTexture("assets/gfx/square4.png");
-    tileSprites[32] = window.LoadTexture("assets/gfx/square5.png");
-    tileSprites[64] = window.LoadTexture("assets/gfx/square6.png"); 
-    tileSprites[128] = window.LoadTexture("assets/gfx/square7.png");   
-    tileSprites[256] = window.LoadTexture("assets/gfx/square8.png");
-    tileSprites[512] = window.LoadTexture("assets/gfx/square9.png");
-    tileSprites[1024] = window.LoadTexture("assets/gfx/square10.png");
-    tileSprites[2048] = window.LoadTexture("assets/gfx/square11.png");
+    tileSprites[2] = window.LoadTexture("assets/gfx/2_tile.png");
+    tileSprites[4] = window.LoadTexture("assets/gfx/4_tile.png");
+    tileSprites[8] = window.LoadTexture("assets/gfx/8_tile.png");
+    tileSprites[16] = window.LoadTexture("assets/gfx/16_tile.png");
+    tileSprites[32] = window.LoadTexture("assets/gfx/32_tile.png");
+    tileSprites[64] = window.LoadTexture("assets/gfx/64_tile.png"); 
+    tileSprites[128] = window.LoadTexture("assets/gfx/128_tile.png");   
+    tileSprites[256] = window.LoadTexture("assets/gfx/256_tile.png");
+    tileSprites[512] = window.LoadTexture("assets/gfx/512_tile.png");
+    tileSprites[1024] = window.LoadTexture("assets/gfx/1024_tile.png");
+    tileSprites[2048] = window.LoadTexture("assets/gfx/2048_tile.png");
 }
 
 void TileManager::CreateTile(int row, int column)
 {
-    std::cout << row << ", " << column << std::endl;
     tiles[row][column] = new Tile(TILE_SIZE);
     Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
@@ -67,7 +78,7 @@ void TileManager::MoveTiles(MoveDirection direction)
             int rightmostTile = 3;
             for (int column = 2; column >= 0; column--)
             {         
-                if (!tiles[row][column]) continue;
+                if (tiles[row][column] == NULL) continue;
 
                 // Loops through all possible tiles to the right to find the rightmost space that the current
                 // tile can move to or the rightmost tile that the current tile can combine with 
@@ -113,7 +124,7 @@ void TileManager::MoveTiles(MoveDirection direction)
             int leftmostTile = 0;
             for (int column = 1; column < 4; column++)
             {
-                if (!tiles[row][column]) continue;
+                if (tiles[row][column] == NULL) continue;
 
                 while (leftmostTile < column)
                 {
@@ -123,9 +134,7 @@ void TileManager::MoveTiles(MoveDirection direction)
 
                         tiles[row][leftmostTile] = tiles[row][column];
                         tiles[row][column] = NULL;
-                        tiles[row][leftmostTile]->sprite->x = BORDER_HORIZONTAL 
-                                                           + (TILE_OFFSET * (leftmostTile + 1))
-                                                           + (TILE_SIZE * leftmostTile);
+                        tiles[row][leftmostTile]->sprite->x = gridSpaces[row][leftmostTile]->x;
                         break;
                     }
                     // Checks if leftmost tile or the tile directly to the left of the current tile
@@ -160,7 +169,7 @@ void TileManager::MoveTiles(MoveDirection direction)
             int topmostTile = 0;
             for (int row = 1; row < 4; row++)
             {
-                if (!tiles[row][column]) continue;
+                if (tiles[row][column] == NULL) continue;
 
                 while (topmostTile < row)
                 {
@@ -170,9 +179,7 @@ void TileManager::MoveTiles(MoveDirection direction)
 
                         tiles[topmostTile][column] = tiles[row][column];
                         tiles[row][column] = NULL;
-                        tiles[topmostTile][column]->sprite->y = BORDER_VERTICAL 
-                                                           + (TILE_OFFSET * (topmostTile + 1))
-                                                           + (TILE_SIZE * topmostTile);
+                        tiles[topmostTile][column]->sprite->y = gridSpaces[topmostTile][column]->y;
                         break;
                     }
                     else if (tiles[topmostTile][column]->value == tiles[row][column]->value)
@@ -203,7 +210,7 @@ void TileManager::MoveTiles(MoveDirection direction)
             int bottommostTile = 3;
             for (int row = 2; row >= 0; row--)
             {
-                if (!tiles[row][column]) continue;
+                if (tiles[row][column] == NULL) continue;
 
                 while (bottommostTile > row)
                 {
@@ -213,9 +220,7 @@ void TileManager::MoveTiles(MoveDirection direction)
 
                         tiles[bottommostTile][column] = tiles[row][column];
                         tiles[row][column] = NULL;
-                        tiles[bottommostTile][column]->sprite->y = BORDER_VERTICAL 
-                                                           + (TILE_OFFSET * (bottommostTile + 1))
-                                                           + (TILE_SIZE * bottommostTile);
+                        tiles[bottommostTile][column]->sprite->y = gridSpaces[bottommostTile][column]->y;
                         break;
                     }
                     else if (tiles[bottommostTile][column]->value == tiles[row][column]->value)
@@ -244,28 +249,9 @@ void TileManager::MoveTiles(MoveDirection direction)
     {
         SpawnRandomTile();
     }
-}
-
-void TileManager::SpawnRandomTile()
-{
-    int randomRow = rand() % 4;
-    int randomColumn = rand() % 4;
-
-    if (tiles[randomRow][randomColumn]) 
+    else if (tileCount == 16 && !tilesMoved)
     {
-        SpawnRandomTile();
-    }
-    // Ensures that tiles won't spawn in the same place twice unless there's only one space left
-    else if (randomRow == lastSpawnRow && randomColumn == lastSpawnColumn && tileCount < 15) 
-    {
-        SpawnRandomTile();
-    }
-    else
-    { 
-        CreateTile(randomRow, randomColumn);
-        lastSpawnRow = randomRow;
-        lastSpawnColumn = randomColumn;
-        tileCount++;
+        if (GameIsOver()) std::cout << "Game Over" << std::endl;
     }
 }
 
@@ -292,4 +278,107 @@ void TileManager::DrawTiles(RenderWindow& window)
             window.Draw(tiles[row][column]->sprite);
         }
     }
+}
+
+void TileManager::SpawnRandomTile()
+{
+    int randomRow = rand() % 4;
+    int randomColumn = rand() % 4;
+
+    if (tiles[randomRow][randomColumn]) 
+    {
+        SpawnRandomTile();
+    }
+    // Ensures that tiles won't spawn in the same place twice unless there's only one space left
+    else if (randomRow == lastSpawnRow && randomColumn == lastSpawnColumn && tileCount < 15) 
+    {
+        SpawnRandomTile();
+    }
+    else
+    { 
+        CreateTile(randomRow, randomColumn);
+        lastSpawnRow = randomRow;
+        lastSpawnColumn = randomColumn;
+        tileCount++;
+    }
+}
+
+bool TileManager::GameIsOver()
+{
+    bool tilesMoved = false;
+
+    // Check right
+    for (int row = 0; row < 4; row++)
+    {
+        int rightmostTile = 3;
+        for (int column = 2; column >= 0; column--)
+        {         
+            while (rightmostTile > column)
+            {
+                if (tiles[row][rightmostTile] == NULL 
+                || tiles[row][rightmostTile]->value == tiles[row][column]->value) 
+                {
+                    tilesMoved = true;
+                    break;
+                }
+                rightmostTile--;
+            }
+        }
+    }
+    // Check left
+    for (int row = 0; row < 4; row++)
+    {
+        int leftmostTile = 0;
+        for (int column = 1; column < 4; column++)
+        {
+            while (leftmostTile < column)
+            {
+                if (tiles[row][leftmostTile] == NULL 
+                || tiles[row][leftmostTile]->value == tiles[row][column]->value)
+                {
+                    tilesMoved = true;
+                    break;
+                }        
+                leftmostTile++;
+            }
+        }
+    }
+    // Check up 
+    for (int column = 0; column < 4; column++)
+    {
+        int topmostTile = 0;
+        for (int row = 1; row < 4; row++)
+        {
+            while (topmostTile < row)
+            {
+                if (tiles[topmostTile][column] == NULL
+                || tiles[topmostTile][column]->value == tiles[row][column]->value)
+                {
+                    tilesMoved = true;
+                    break;
+                }
+                topmostTile++;
+            }
+        }
+    }
+    // Check down
+    for (int column = 0; column < 4; column++)
+    {
+        int bottommostTile = 3;
+        for (int row = 2; row >= 0; row--)
+        {
+            while (bottommostTile > row)
+            {
+                if (tiles[bottommostTile][column] == NULL
+                || tiles[bottommostTile][column]->value == tiles[row][column]->value)
+                {
+                    tilesMoved = true;
+                    break;
+                }
+                bottommostTile--;
+            }
+        }
+    }
+
+    return !tilesMoved;
 }

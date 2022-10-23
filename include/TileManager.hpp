@@ -15,13 +15,14 @@ public:
     };
 public:
     TileManager(RenderWindow& window);
+    ~TileManager();
 
     void LoadTileSprites(RenderWindow& window);
     void CreateTile(int column, int row);
     void MoveTiles(MoveDirection direction);
 
     void DrawGrid(RenderWindow& window);
-    void DrawTiles(RenderWindow& window); 
+    void DrawTiles(RenderWindow& window);
 public:
     Sprite* gridBackgroundSprite;
     
@@ -29,6 +30,7 @@ public:
     Tile* tiles[4][4] = {};
 private:
     void SpawnRandomTile();
+    bool GameIsOver();
 private:
     const float BORDER_HORIZONTAL = 150.f;
     const float BORDER_VERTICAL = 200.f;

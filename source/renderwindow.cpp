@@ -21,6 +21,12 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height) : wid
         std::cout << "Error: Renderer has failed to init. Error message: " << SDL_GetError() << std::endl;
 }
 
+RenderWindow::~RenderWindow()
+{
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+}
+
 void RenderWindow::SetColor(int p_r, int p_g, int p_b, int p_a)
 {
     SDL_SetRenderDrawColor(renderer, p_r, p_g, p_b, p_a);
