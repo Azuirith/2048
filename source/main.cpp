@@ -56,16 +56,8 @@ int main(int argc, char* argv[])
 
         window.Clear();
 
-        window.Draw(tileManager.gridBackgroundSprite);
-
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (tileManager.tiles[i][j] == NULL) continue;
-                window.Draw(tileManager.tiles[i][j]->sprite);
-            }
-        }
+        tileManager.DrawGrid(window);
+        tileManager.DrawTiles(window);
 
         window.Update();
     }

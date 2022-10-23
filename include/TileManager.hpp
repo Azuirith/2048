@@ -19,9 +19,13 @@ public:
     void LoadTileSprites(RenderWindow& window);
     void CreateTile(int column, int row);
     void MoveTiles(MoveDirection direction);
+
+    void DrawGrid(RenderWindow& window);
+    void DrawTiles(RenderWindow& window); 
 public:
     Sprite* gridBackgroundSprite;
     
+    Sprite* gridSpaces[4][4] = {};
     Tile* tiles[4][4] = {};
 private:
     void SpawnRandomTile();
@@ -35,5 +39,7 @@ private:
 
     std::map<int, SDL_Texture*> tileSprites;
 
-    int currentTiles = 0;
+    int tileCount = 0;
+    int lastSpawnRow = 0;
+    int lastSpawnColumn = 0;
 };

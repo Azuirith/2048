@@ -9,12 +9,26 @@
 TileManager::TileManager(RenderWindow& window)
 {
     srand(time(0)); // For the random tile spawning
+
     gridBackgroundSprite = new Sprite(BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_WIDTH, BORDER_HEIGHT);
     gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/gridBackground.png");
+
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            gridSpaces[row][column] = new Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
+                                                 BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
+                                                 TILE_SIZE,
+                                                 TILE_SIZE);  
+            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/emptysquare.png");
+        }
+    }
+
     LoadTileSprites(window);
     SpawnRandomTile();
     SpawnRandomTile();
-    currentTiles = 2;
+    tileCount = 2;
 }
 
 void TileManager::LoadTileSprites(RenderWindow& window)
@@ -28,15 +42,18 @@ void TileManager::LoadTileSprites(RenderWindow& window)
     tileSprites[128] = window.LoadTexture("assets/gfx/square7.png");   
     tileSprites[256] = window.LoadTexture("assets/gfx/square8.png");
     tileSprites[512] = window.LoadTexture("assets/gfx/square9.png");
+    tileSprites[1024] = window.LoadTexture("assets/gfx/square10.png");
+    tileSprites[2048] = window.LoadTexture("assets/gfx/square11.png");
 }
 
 void TileManager::CreateTile(int row, int column)
 {
+    std::cout << row << ", " << column << std::endl;
     tiles[row][column] = new Tile(TILE_SIZE);
     Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
-    newTile->sprite->x = BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column);
-    newTile->sprite->y = BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row);
+    newTile->sprite->x = gridSpaces[row][column]->x;
+    newTile->sprite->y = gridSpaces[row][column]->y;
 }
 
 void TileManager::MoveTiles(MoveDirection direction)
@@ -64,9 +81,7 @@ void TileManager::MoveTiles(MoveDirection direction)
 
                         tiles[row][rightmostTile] = tiles[row][column];
                         tiles[row][column] = NULL;
-                        tiles[row][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
-                                                                + (TILE_OFFSET * (rightmostTile + 1))
-                                                                + (TILE_SIZE * rightmostTile);
+                        tiles[row][rightmostTile]->sprite->x = gridSpaces[row][rightmostTile]->x;
                         break;
                     }
                     else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
@@ -76,7 +91,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
-                        currentTiles--;
+                        tileCount--;
 
                         tiles[row][rightmostTile]->value = newTileValue;
                         tiles[row][rightmostTile]->sprite->texture = tileSprites[newTileValue]; 
@@ -122,7 +137,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
-                        currentTiles--;
+                        tileCount--;
 
                         tiles[row][leftmostTile]->value = newTileValue;
                         tiles[row][leftmostTile]->sprite->texture = tileSprites[newTileValue]; 
@@ -167,7 +182,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
-                        currentTiles--;
+                        tileCount--;
 
                         tiles[topmostTile][column]->value = newTileValue;
                         tiles[topmostTile][column]->sprite->texture = tileSprites[newTileValue]; 
@@ -210,7 +225,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         int newTileValue = tiles[row][column]->value * 2;
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
-                        currentTiles--;
+                        tileCount--;
 
                         tiles[bottommostTile][column]->value = newTileValue;
                         tiles[bottommostTile][column]->sprite->texture = tileSprites[newTileValue];  
@@ -225,7 +240,7 @@ void TileManager::MoveTiles(MoveDirection direction)
         }
     }
 
-    if (currentTiles < 16 && tilesMoved) 
+    if (tileCount < 16 && tilesMoved) 
     {
         SpawnRandomTile();
     }
@@ -233,16 +248,48 @@ void TileManager::MoveTiles(MoveDirection direction)
 
 void TileManager::SpawnRandomTile()
 {
-    int randomColumn = rand() % 4;
     int randomRow = rand() % 4;
+    int randomColumn = rand() % 4;
 
-    if (tiles[randomColumn][randomRow]) 
+    if (tiles[randomRow][randomColumn]) 
+    {
+        SpawnRandomTile();
+    }
+    // Ensures that tiles won't spawn in the same place twice unless there's only one space left
+    else if (randomRow == lastSpawnRow && randomColumn == lastSpawnColumn && tileCount < 15) 
     {
         SpawnRandomTile();
     }
     else
     { 
-        CreateTile(randomColumn, randomRow);
-        currentTiles++;
+        CreateTile(randomRow, randomColumn);
+        lastSpawnRow = randomRow;
+        lastSpawnColumn = randomColumn;
+        tileCount++;
+    }
+}
+
+void TileManager::DrawGrid(RenderWindow& window)
+{
+    window.Draw(gridBackgroundSprite);
+
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            window.Draw(gridSpaces[row][column]);
+        }
+    }
+}
+
+void TileManager::DrawTiles(RenderWindow& window)
+{
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            if (tiles[row][column] == NULL) continue;
+            window.Draw(tiles[row][column]->sprite);
+        }
     }
 }
