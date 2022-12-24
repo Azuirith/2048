@@ -11,7 +11,7 @@ TileManager::TileManager(RenderWindow& window)
     srand(time(0)); // For the random tile spawning
 
     gridBackgroundSprite = new Sprite(BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_WIDTH, BORDER_HEIGHT);
-    gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/gridBackground.png");
+    gridBackgroundSprite->texture = window.LoadTexture("assets/gfx/grid_background.png");
 
     for (int row = 0; row < 4; row++)
     {
@@ -21,7 +21,7 @@ TileManager::TileManager(RenderWindow& window)
                                                  BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
                                                  TILE_SIZE,
                                                  TILE_SIZE);  
-            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/emptysquare.png");
+            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/grid_space.png");
         }
     }
 
@@ -33,22 +33,21 @@ TileManager::TileManager(RenderWindow& window)
 
 void TileManager::LoadTileSprites(RenderWindow& window)
 {
-    tileSprites[2] = window.LoadTexture("assets/gfx/square.png");
-    tileSprites[4] = window.LoadTexture("assets/gfx/square2.png");
-    tileSprites[8] = window.LoadTexture("assets/gfx/square3.png");
-    tileSprites[16] = window.LoadTexture("assets/gfx/square4.png");
-    tileSprites[32] = window.LoadTexture("assets/gfx/square5.png");
-    tileSprites[64] = window.LoadTexture("assets/gfx/square6.png"); 
-    tileSprites[128] = window.LoadTexture("assets/gfx/square7.png");   
-    tileSprites[256] = window.LoadTexture("assets/gfx/square8.png");
-    tileSprites[512] = window.LoadTexture("assets/gfx/square9.png");
-    tileSprites[1024] = window.LoadTexture("assets/gfx/square10.png");
-    tileSprites[2048] = window.LoadTexture("assets/gfx/square11.png");
+    tileSprites[2] = window.LoadTexture("assets/gfx/2_tile.png");
+    tileSprites[4] = window.LoadTexture("assets/gfx/4_tile.png");
+    tileSprites[8] = window.LoadTexture("assets/gfx/8_tile.png");
+    tileSprites[16] = window.LoadTexture("assets/gfx/16_tile.png");
+    tileSprites[32] = window.LoadTexture("assets/gfx/32_tile.png");
+    tileSprites[64] = window.LoadTexture("assets/gfx/64_tile.png"); 
+    tileSprites[128] = window.LoadTexture("assets/gfx/128_tile.png");   
+    tileSprites[256] = window.LoadTexture("assets/gfx/256_tile.png");
+    tileSprites[512] = window.LoadTexture("assets/gfx/512_tile.png");
+    tileSprites[1024] = window.LoadTexture("assets/gfx/1024_tile.png");
+    tileSprites[2048] = window.LoadTexture("assets/gfx/2048_tile.png");
 }
 
 void TileManager::CreateTile(int row, int column)
 {
-    std::cout << row << ", " << column << std::endl;
     tiles[row][column] = new Tile(TILE_SIZE);
     Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
