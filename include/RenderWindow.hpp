@@ -6,7 +6,6 @@ class RenderWindow
 {
 public: 
     RenderWindow(const char* p_title, int p_width, int p_height);
-    ~RenderWindow();
 
     void SetColor(int r, int g, int b, int a);
 
@@ -15,7 +14,6 @@ public:
     void Clear();
     void Draw(Sprite* p_sprite);
     void Update();
-    void Destroy();
 
     const int width;
     const int height;
