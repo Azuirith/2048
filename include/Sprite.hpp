@@ -5,6 +5,7 @@
 class Sprite
 {
 public:
+    Sprite();
     Sprite(float p_x, float p_y, float p_width, float p_height);
 
     SDL_Texture* texture;

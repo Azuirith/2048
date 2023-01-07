@@ -1,12 +1,14 @@
+#include <iostream>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <iostream>
 
 #include "RenderWindow.hpp"
 #include "Sprite.hpp"
 #include "Tile.hpp"
 #include "TileManager.hpp"
+#include "ScoreManager.hpp"
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 900
@@ -18,6 +20,9 @@ void InitSDL()
 
     if (!(IMG_Init(IMG_INIT_PNG)))
         std::cout << "Error: IMG_Init has failed. Error message: " << SDL_GetError() << std::endl;
+
+    if (TTF_Init() < 0)
+      std::cout << "Error: TTF_Init has failed. Error message: " << SDL_GetError() << std::endl; 
 }
 
 int main(int argc, char* argv[])
@@ -28,6 +33,7 @@ int main(int argc, char* argv[])
     window.SetColor(250, 248, 239, 255);
 
     TileManager tileManager(window);
+    ScoreManager scoreManager;
 
     bool gameRunning = true;
     SDL_Event event;
@@ -44,13 +50,13 @@ int main(int argc, char* argv[])
             {
                 // Registers both WASD and arrow keys
                 if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    tileManager.MoveTiles(TileManager::MoveDirection::UP);
+                    tileManager.MoveTiles(TileManager::MoveDirection::UP, scoreManager);
                 else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT);
+                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT, scoreManager);
                 else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN);
+                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN, scoreManager);
                 else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT);
+                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT, scoreManager);
             }
         }
 
@@ -58,6 +64,8 @@ int main(int argc, char* argv[])
 
         tileManager.DrawGrid(window);
         tileManager.DrawTiles(window);
+
+        scoreManager.DrawScore(window);
 
         window.Update();
     }

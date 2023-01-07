@@ -2,8 +2,9 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "TileManager.hpp"
 #include "RenderWindow.hpp"
+#include "ScoreManager.hpp"
+#include "TileManager.hpp"
 #include "Tile.hpp"
 
 TileManager::TileManager(RenderWindow& window)
@@ -55,9 +56,10 @@ void TileManager::CreateTile(int row, int column)
     newTile->sprite->y = gridSpaces[row][column]->y;
 }
 
-void TileManager::MoveTiles(MoveDirection direction)
+bool TileManager::MoveTiles(MoveDirection direction, ScoreManager& scoreManager)
 {   
     bool tilesMoved = false; // Used for figuring out if a new tile should be spawned
+    bool scoreChanged = false;
 
     if (direction == MoveDirection::RIGHT)
     {
@@ -88,6 +90,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
+                        scoreManager.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -134,6 +137,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
+                        scoreManager.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -179,6 +183,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
+                        scoreManager.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -222,6 +227,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
+                        scoreManager.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -243,6 +249,8 @@ void TileManager::MoveTiles(MoveDirection direction)
     {
         SpawnRandomTile();
     }
+
+    return scoreChanged;
 }
 
 void TileManager::SpawnRandomTile()
@@ -270,13 +278,13 @@ void TileManager::SpawnRandomTile()
 
 void TileManager::DrawGrid(RenderWindow& window)
 {
-    window.Draw(gridBackgroundSprite);
+    window.Draw(*gridBackgroundSprite, false);
 
     for (int row = 0; row < 4; row++)
     {
         for (int column = 0; column < 4; column++)
         {
-            window.Draw(gridSpaces[row][column]);
+            window.Draw(*gridSpaces[row][column], false);
         }
     }
 }
@@ -288,7 +296,7 @@ void TileManager::DrawTiles(RenderWindow& window)
         for (int column = 0; column < 4; column++)
         {
             if (tiles[row][column] == NULL) continue;
-            window.Draw(tiles[row][column]->sprite);
+            window.Draw(*tiles[row][column]->sprite, false);
         }
     }
 }

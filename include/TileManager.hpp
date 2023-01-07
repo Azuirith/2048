@@ -3,6 +3,7 @@
 #include <map>
 
 #include "RenderWindow.hpp"
+#include "ScoreManager.hpp"
 #include "Sprite.hpp"
 #include "Tile.hpp"
 
@@ -18,7 +19,7 @@ public:
 
     void LoadTileSprites(RenderWindow& window);
     void CreateTile(int column, int row);
-    void MoveTiles(MoveDirection direction);
+    bool MoveTiles(MoveDirection direction, ScoreManager& scoreManager);
 
     void DrawGrid(RenderWindow& window);
     void DrawTiles(RenderWindow& window); 
@@ -40,6 +41,7 @@ private:
     std::map<int, SDL_Texture*> tileSprites;
 
     int tileCount = 0;
+    
     int lastSpawnRow = 0;
     int lastSpawnColumn = 0;
 };
