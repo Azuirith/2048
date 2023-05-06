@@ -30,10 +30,8 @@ int main(int argc, char* argv[])
     InitSDL();
 
     RenderWindow window("2048", WINDOW_WIDTH, WINDOW_HEIGHT);
-    window.SetColor(250, 248, 239, 255);
-
-    TileManager tileManager(window);
-    ScoreManager scoreManager;
+    ScoreManager scoreManager(window);
+    TileManager tileManager(window, scoreManager);
 
     bool gameRunning = true;
     SDL_Event event;
@@ -50,22 +48,23 @@ int main(int argc, char* argv[])
             {
                 // Registers both WASD and arrow keys
                 if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    tileManager.MoveTiles(TileManager::MoveDirection::UP, scoreManager);
+                    tileManager.MoveTiles(TileManager::MoveDirection::UP);
                 else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT, scoreManager);
+                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT);
                 else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN, scoreManager);
+                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN);
                 else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT, scoreManager);
+                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT);
             }
         }
 
         window.Clear();
 
-        tileManager.DrawGrid(window);
-        tileManager.DrawTiles(window);
+        tileManager.DrawGrid();
+        tileManager.DrawTiles();
 
-        scoreManager.DrawScore(window);
+        scoreManager.DrawScore();
+        scoreManager.DrawHighScore();
 
         window.Update();
     }

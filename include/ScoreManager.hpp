@@ -10,19 +10,36 @@
 class ScoreManager
 {
 public:
-    ScoreManager();
-    void DrawScore(RenderWindow& window);
+    ScoreManager(RenderWindow& window);
+    
     void UpdateScore(int scoreIncrement);
+    void UpdateHighScore();
+    void DrawScore();
+    void DrawHighScore();
 private:
-    const float SCORE_HORIZONTAL = 600.f;
-    const float SCORE_VERTICAL = 150.f;
-    const float SCORE_WIDTH = 24.f;
-    const float SCORE_HEIGHT = 50.f;
+    void AlignScoreUI();
+    void AlignHighScoreUI();
+private:
+    RenderWindow& windowReference;
+
+    const float UI_VERTICAL = 125.f;
+    const float UI_HEIGHT = 50.f;
+    const float UI_WIDTH = 24.f;
+    
+    const float SCORE_HORIZONTAL = 615.f;
+    const float HIGH_SCORE_HORIZONTAL = 270.f;
+
     Sprite scoreSprite;
+    Sprite scoreBorderSprite; 
     std::string scoreString = "Score: 0";
+
+    Sprite highScoreSprite;
+    Sprite highScoreBorderSprite;
+    std::string highScoreString = "Best: 0";
 
     const int FONT_SIZE = 48;
     TTF_Font* FONT;
 
     int score = 0;
+    int highScore = 0;
 };

@@ -15,22 +15,26 @@ public:
         RIGHT = 0, LEFT, UP, DOWN
     };
 public:
-    TileManager(RenderWindow& window);
+    TileManager(RenderWindow& window, ScoreManager& scoreManager);
 
-    void LoadTileSprites(RenderWindow& window);
+    void LoadTileSprites();
     void CreateTile(int column, int row);
-    bool MoveTiles(MoveDirection direction, ScoreManager& scoreManager);
+    void MoveTiles(MoveDirection direction);
+    int NumAvailableMoves();
 
-    void DrawGrid(RenderWindow& window);
-    void DrawTiles(RenderWindow& window); 
+    void DrawGrid();
+    void DrawTiles(); 
 public:
-    Sprite* gridBackgroundSprite;
+    Sprite gridBackground;
     
     Sprite* gridSpaces[4][4] = {};
     Tile* tiles[4][4] = {};
 private:
     void SpawnRandomTile();
 private:
+    RenderWindow& windowReference;
+    ScoreManager& scoreManagerReference;
+
     const float BORDER_HORIZONTAL = 150.f;
     const float BORDER_VERTICAL = 200.f;
     const float BORDER_WIDTH = 600.f;

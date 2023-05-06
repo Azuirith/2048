@@ -20,11 +20,8 @@ RenderWindow::RenderWindow(const char* title, int p_width, int p_height) : width
 
     if (renderer == NULL)
         std::cout << "Error: Renderer has failed to init. Error message: " << SDL_GetError() << std::endl;
-}
 
-void RenderWindow::SetColor(int r, int g, int b, int a)
-{
-    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    SDL_SetRenderDrawColor(renderer, 250, 248, 239, 255);
 }
 
 SDL_Texture* RenderWindow::LoadTexture(const char* p_filePath)
