@@ -3,12 +3,12 @@
 #include <ctime>
 
 #include "RenderWindow.hpp"
-#include "ScoreManager.hpp"
+#include "UIManager.hpp"
 #include "TileManager.hpp"
 #include "Tile.hpp"
 
-TileManager::TileManager(RenderWindow& window, ScoreManager& scoreManager) 
-    : windowReference(window), scoreManagerReference(scoreManager)
+TileManager::TileManager(RenderWindow& window, UIManager& UIManager) 
+    : windowReference(window), UIManagerReference(UIManager)
 {
     srand(time(0)); // For the random tile spawning
 
@@ -28,6 +28,18 @@ TileManager::TileManager(RenderWindow& window, ScoreManager& scoreManager)
     }
 
     LoadTileSprites();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
+    SpawnRandomTile();
     SpawnRandomTile();
     SpawnRandomTile();
 }
@@ -89,7 +101,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
-                        scoreManagerReference.UpdateScore(newTileValue);
+                        UIManagerReference.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -136,7 +148,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
-                        scoreManagerReference.UpdateScore(newTileValue);
+                        UIManagerReference.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -182,7 +194,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
-                        scoreManagerReference.UpdateScore(newTileValue);
+                        UIManagerReference.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -226,7 +238,7 @@ void TileManager::MoveTiles(MoveDirection direction)
                         tilesMoved = true;
 
                         int newTileValue = tiles[row][column]->value * 2;
-                        scoreManagerReference.UpdateScore(newTileValue);
+                        UIManagerReference.UpdateScore(newTileValue);
                         delete tiles[row][column];
                         tiles[row][column] = NULL; 
                         tileCount--;
@@ -248,9 +260,9 @@ void TileManager::MoveTiles(MoveDirection direction)
     {
         SpawnRandomTile();
     }
-    else if (tileCount == 16 && NumAvailableMoves() == 0)
+    else if (tileCount == 16 && !PlayerHasAvailableMoves())
     {
-        scoreManagerReference.UpdateHighScore();
+        UIManagerReference.UpdateHighScore();
     }
 }
 
@@ -275,6 +287,32 @@ void TileManager::SpawnRandomTile()
         lastSpawnColumn = randomColumn;
         tileCount++;
     }
+}
+
+bool TileManager::PlayerHasAvailableMoves()
+{
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            Tile* currentTile = tiles[row][column];
+            Tile* rightTile = NULL; 
+            Tile* downTile = NULL;
+
+            if (column + 1 < 4) rightTile = tiles[row][column + 1];
+            if (row + 1 < 4) downTile = tiles[row + 1][column];
+
+            if (rightTile != NULL)
+            {
+                if (currentTile->value == rightTile->value) return true;
+            }
+            if (downTile != NULL)
+            {
+                if (currentTile->value == downTile->value) return true;
+            }
+        }
+    }
+    return false;
 }
 
 void TileManager::DrawGrid()

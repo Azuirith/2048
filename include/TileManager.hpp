@@ -3,7 +3,7 @@
 #include <map>
 
 #include "RenderWindow.hpp"
-#include "ScoreManager.hpp"
+#include "UIManager.hpp"
 #include "Sprite.hpp"
 #include "Tile.hpp"
 
@@ -15,12 +15,12 @@ public:
         RIGHT = 0, LEFT, UP, DOWN
     };
 public:
-    TileManager(RenderWindow& window, ScoreManager& scoreManager);
+    TileManager(RenderWindow& window, UIManager& UIManager);
 
     void LoadTileSprites();
     void CreateTile(int column, int row);
     void MoveTiles(MoveDirection direction);
-    int NumAvailableMoves();
+    bool PlayerHasAvailableMoves();
 
     void DrawGrid();
     void DrawTiles(); 
@@ -33,7 +33,7 @@ private:
     void SpawnRandomTile();
 private:
     RenderWindow& windowReference;
-    ScoreManager& scoreManagerReference;
+    UIManager& UIManagerReference;
 
     const float BORDER_HORIZONTAL = 150.f;
     const float BORDER_VERTICAL = 200.f;

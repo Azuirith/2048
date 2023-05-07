@@ -4,10 +4,10 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "RenderWindow.hpp"
-#include "ScoreManager.hpp"
+#include "UIManager.hpp"
 #include "Sprite.hpp"
 
-ScoreManager::ScoreManager(RenderWindow& window) : windowReference(window)
+UIManager::UIManager(RenderWindow& window) : windowReference(window)
 {
     // These all are constant values, so they are not in the AlignScoreUI function
     scoreSprite.height = UI_HEIGHT;
@@ -30,7 +30,7 @@ ScoreManager::ScoreManager(RenderWindow& window) : windowReference(window)
     FONT = TTF_OpenFont("assets/fonts/JetBrainsMono-ExtraBold.ttf", FONT_SIZE);   
 }
 
-void ScoreManager::AlignScoreUI()
+void UIManager::AlignScoreUI()
 {
     scoreSprite.width = UI_WIDTH * scoreString.length();
     scoreSprite.x = SCORE_HORIZONTAL - (scoreSprite.width / 2); 
@@ -38,7 +38,7 @@ void ScoreManager::AlignScoreUI()
     scoreBorderSprite.x = scoreSprite.x - (UI_WIDTH / 2);
 }
 
-void ScoreManager::AlignHighScoreUI()
+void UIManager::AlignHighScoreUI()
 {
     highScoreSprite.width = UI_WIDTH * highScoreString.length();
     highScoreSprite.x = HIGH_SCORE_HORIZONTAL - (highScoreSprite.width / 2);
@@ -46,7 +46,7 @@ void ScoreManager::AlignHighScoreUI()
     highScoreBorderSprite.x = highScoreSprite.x - (UI_WIDTH / 2);
 }
 
-void ScoreManager::DrawScore()
+void UIManager::DrawScore()
 {
     windowReference.Draw(scoreBorderSprite, false);
     SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, scoreString.c_str(), SDL_Color{255, 255, 255, 255});
@@ -54,7 +54,7 @@ void ScoreManager::DrawScore()
     windowReference.Draw(scoreSprite, true);
 }
 
-void ScoreManager::DrawHighScore()
+void UIManager::DrawHighScore()
 {
     windowReference.Draw(highScoreBorderSprite, false);
     SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, highScoreString.c_str(), SDL_Color{255, 255, 255, 255});
@@ -62,14 +62,14 @@ void ScoreManager::DrawHighScore()
     windowReference.Draw(highScoreSprite, true);
 }
 
-void ScoreManager::UpdateScore(int scoreIncrement)
+void UIManager::UpdateScore(int scoreIncrement)
 {
     score += scoreIncrement;
     scoreString = "Score: " + std::to_string(score);
     AlignScoreUI();
 }
 
-void ScoreManager::UpdateHighScore()
+void UIManager::UpdateHighScore()
 {
     highScore = score;
     highScoreString = "Best: " + std::to_string(highScore);

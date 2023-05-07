@@ -7,10 +7,10 @@
 #include "RenderWindow.hpp"
 #include "Sprite.hpp"
 
-class ScoreManager
+class UIManager
 {
 public:
-    ScoreManager(RenderWindow& window);
+    UIManager(RenderWindow& window);
     
     void UpdateScore(int scoreIncrement);
     void UpdateHighScore();

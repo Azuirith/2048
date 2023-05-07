@@ -8,7 +8,7 @@
 #include "Sprite.hpp"
 #include "Tile.hpp"
 #include "TileManager.hpp"
-#include "ScoreManager.hpp"
+#include "UIManager.hpp"
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 900
@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
     InitSDL();
 
     RenderWindow window("2048", WINDOW_WIDTH, WINDOW_HEIGHT);
-    ScoreManager scoreManager(window);
-    TileManager tileManager(window, scoreManager);
+    UIManager UIManager(window);
+    TileManager tileManager(window, UIManager);
 
     bool gameRunning = true;
     SDL_Event event;
@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
         tileManager.DrawGrid();
         tileManager.DrawTiles();
 
-        scoreManager.DrawScore();
-        scoreManager.DrawHighScore();
+        UIManager.DrawScore();
+        UIManager.DrawHighScore();
 
         window.Update();
     }
