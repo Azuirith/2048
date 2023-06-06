@@ -5,7 +5,7 @@
 class RenderWindow
 {
 public: 
-    RenderWindow(const char* title, int p_width, int p_height);
+    RenderWindow(const char* title, int width, int height);
 
     SDL_Texture* LoadTexture(const char* filePath);
     SDL_Texture* CreateTextureFromSurface(SDL_Surface* surface);
@@ -13,9 +13,6 @@ public:
     void Clear();
     void Draw(Sprite& sprite, bool isText);
     void Update();
-
-    const int width;
-    const int height;
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;

@@ -6,11 +6,18 @@
 #include "RenderWindow.hpp"
 #include "Sprite.hpp"
 
-RenderWindow::RenderWindow(const char* title, int p_width, int p_height) : width(p_width), height(p_height)
+#define WINDOW_COLOR_R 250
+#define WINDOW_COLOR_G 248
+#define WINDOW_COLOR_B 239
+#define WINDOW_COLOR_A 255
+
+#define TEXTURE_RESOLUTION 128
+
+RenderWindow::RenderWindow(const char* title, int width, int height)
 {
     window = SDL_CreateWindow(title, 
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-                              this->width, this->height,
+                              width, height,
                               0);
 
     if (window == NULL)
@@ -21,27 +28,27 @@ RenderWindow::RenderWindow(const char* title, int p_width, int p_height) : width
     if (renderer == NULL)
         std::cout << "Error: Renderer has failed to init. Error message: " << SDL_GetError() << std::endl;
 
-    SDL_SetRenderDrawColor(renderer, 250, 248, 239, 255);
+    SDL_SetRenderDrawColor(renderer, WINDOW_COLOR_R, WINDOW_COLOR_G, WINDOW_COLOR_B, WINDOW_COLOR_A);
 }
 
-SDL_Texture* RenderWindow::LoadTexture(const char* p_filePath)
+SDL_Texture* RenderWindow::LoadTexture(const char* filePath)
 {
-    SDL_Texture* texture = NULL;
-    texture = IMG_LoadTexture(renderer, p_filePath);
+    SDL_Texture* texture;
+    texture = IMG_LoadTexture(renderer, filePath);
 
     if (texture == NULL)
-        std::cout << "Error: Texture has failed to load. Error message: " << SDL_GetError() << std::endl;
+        std::cout << "Error: LoadTexture has failed. Error message: " << SDL_GetError() << std::endl;
 
     return texture;
 }
 
-SDL_Texture* RenderWindow::CreateTextureFromSurface(SDL_Surface* p_surface)
+SDL_Texture* RenderWindow::CreateTextureFromSurface(SDL_Surface* surface)
 {
-    SDL_Texture* texture = NULL;
-    texture = SDL_CreateTextureFromSurface(renderer, p_surface);
+    SDL_Texture* texture;
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
 
     if (texture == NULL)
-        std::cout << "Error: SDL_CreateTextureFromSurface has failed. Error message: " << SDL_GetError() << std::endl;
+        std::cout << "Error: CreateTextureFromSurface has failed. Error message: " << SDL_GetError() << std::endl;
 
     return texture;
 }
@@ -59,6 +66,7 @@ void RenderWindow::Draw(Sprite& sprite, bool isText)
     destination.w = sprite.width;
     destination.h = sprite.height; 
 
+    // Done because text does not have the same resoultion as other sprites
     if (isText)
     {
         SDL_RenderCopy(renderer, sprite.texture, NULL, &destination);
@@ -68,8 +76,8 @@ void RenderWindow::Draw(Sprite& sprite, bool isText)
     SDL_Rect source;
     source.x = 0;
     source.y = 0;
-    source.w = 128;
-    source.h = 128;
+    source.w = TEXTURE_RESOLUTION;
+    source.h = TEXTURE_RESOLUTION;
 
     SDL_RenderCopy(renderer, sprite.texture, &source, &destination);
 }

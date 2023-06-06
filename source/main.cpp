@@ -13,7 +13,9 @@
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 900
 
-void InitSDL()
+#define FPS 1.f / 60.f
+
+int main(int argc, char* argv[])
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         std::cout << "Error: SDL_Init has failed. Error message: " << SDL_GetError() << std::endl;
@@ -22,18 +24,18 @@ void InitSDL()
         std::cout << "Error: IMG_Init has failed. Error message: " << SDL_GetError() << std::endl;
 
     if (TTF_Init() < 0)
-      std::cout << "Error: TTF_Init has failed. Error message: " << SDL_GetError() << std::endl; 
-}
-
-int main(int argc, char* argv[])
-{
-    InitSDL();
+        std::cout << "Error: TTF_Init has failed. Error message: " << SDL_GetError() << std::endl; 
 
     RenderWindow window("2048", WINDOW_WIDTH, WINDOW_HEIGHT);
     UIManager UIManager(window);
     TileManager tileManager(window, UIManager);
 
+    float lastFrameTime = 0.f, currentFrameTime;
+    float accumulator = 0.f;
+
     bool gameRunning = true;
+    bool tilesMoving = false;
+
     SDL_Event event;
     while (gameRunning)
     {
@@ -41,32 +43,52 @@ int main(int argc, char* argv[])
         {
             if (event.type == SDL_QUIT) 
             {
-                std::cout << SDL_GetError() << std::endl;
+                std::cout << "Error: " << SDL_GetError() << std::endl;
                 gameRunning = false;
+                break;
             }
             else if (event.type == SDL_KEYDOWN)
             {
+                if (tilesMoving) continue;
+
                 // Registers both WASD and arrow keys
                 if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    tileManager.MoveTiles(TileManager::MoveDirection::UP);
+                    tileManager.MoveTiles(TileManager::MoveDirection::UP, tilesMoving);
                 else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT);
+                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT, tilesMoving);
                 else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN);
+                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN, tilesMoving);
                 else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT);
+                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT, tilesMoving);
+
+                if (event.key.keysym.sym == SDLK_r) // Restart
+                {
+                    UIManager.ResetScore();
+                    tileManager.ResetTiles();
+                }
             }
         }
 
-        window.Clear();
+        currentFrameTime = SDL_GetTicks();
+        float deltaTime = (currentFrameTime - lastFrameTime) / 1000;
+        accumulator += deltaTime;
+        lastFrameTime = currentFrameTime;
 
-        tileManager.DrawGrid();
-        tileManager.DrawTiles();
+        while (accumulator >= FPS)
+        {   
+            window.Clear();
 
-        UIManager.DrawScore();
-        UIManager.DrawHighScore();
+            tileManager.DrawGrid();
+            tileManager.DrawTiles();
 
-        window.Update();
+            UIManager.DrawScore();
+            UIManager.DrawHighScore();
+            UIManager.DrawRestartText();
+
+            window.Update();
+
+            accumulator -= FPS;
+        }
     }
 
     SDL_Quit();
