@@ -4,6 +4,7 @@
 
 struct Sprite
 {
+    Sprite();
     Sprite(float x, float y, int width, int height);
 
     SDL_Texture* texture;

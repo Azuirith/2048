@@ -2,12 +2,14 @@
 
 #include "Sprite.hpp"
 
-class Tile
+#define TILE_START_VALUE 2
+
+struct Tile
 {
-public:
-    Tile(float p_tileSize);
+    Tile(int size);
 
     Sprite* sprite;
+    int value = TILE_START_VALUE;
 
-    int value = 2;
+    Sprite* targetGridSpace;
 };

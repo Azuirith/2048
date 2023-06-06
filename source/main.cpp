@@ -43,7 +43,6 @@ int main(int argc, char* argv[])
         {
             if (event.type == SDL_QUIT) 
             {
-                std::cout << "Error: " << SDL_GetError() << std::endl;
                 gameRunning = false;
                 break;
             }

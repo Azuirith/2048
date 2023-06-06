@@ -13,21 +13,29 @@ public:
     UIManager(RenderWindow& window);
     
     void UpdateScore(int scoreIncrement);
-    void UpdateHighScore();
     void DrawScore();
+    void ResetScore();
+
+    void UpdateHighScore();
     void DrawHighScore();
+
+    void DrawRestartText();
 private:
     void AlignScoreUI();
     void AlignHighScoreUI();
 private:
     RenderWindow& windowReference;
 
-    const float UI_VERTICAL = 125.f;
-    const float UI_HEIGHT = 50.f;
-    const float UI_WIDTH = 24.f;
+    const float UI_TEXT_WIDTH = 24.f;
+    const float UI_TEXT_HEIGHT = 50.f;
+
+    const float SCORE_TEXT_HORIZONTAL = 615.f;
+    const float SCORE_TEXT_VERTICAL = 125.f;
+
+    const float RESTART_TEXT_HORIZONTAL = 230.f;
+    const float RESTART_TEXT_VERTICAL = 810.f;
     
-    const float SCORE_HORIZONTAL = 615.f;
-    const float HIGH_SCORE_HORIZONTAL = 270.f;
+    const float HIGH_SCORE_TEXT_HORIZONTAL = 270.f;
 
     Sprite scoreSprite;
     Sprite scoreBorderSprite; 
@@ -36,6 +44,9 @@ private:
     Sprite highScoreSprite;
     Sprite highScoreBorderSprite;
     std::string highScoreString = "Best: 0";
+
+    Sprite restartSprite;
+    std::string restartString = "Press R to restart";
 
     const int FONT_SIZE = 48;
     TTF_Font* FONT;

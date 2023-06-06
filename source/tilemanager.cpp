@@ -30,22 +30,11 @@ TileManager::TileManager(RenderWindow& window, UIManager& UIManager)
     LoadTileSprites();
     SpawnRandomTile();
     SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
-    SpawnRandomTile();
 }
 
 void TileManager::LoadTileSprites()
 {
+    // I know I could use a loop for this
     tileSprites[2] = windowReference.LoadTexture("assets/gfx/2_tile.png");
     tileSprites[4] = windowReference.LoadTexture("assets/gfx/4_tile.png");
     tileSprites[8] = windowReference.LoadTexture("assets/gfx/8_tile.png");
@@ -68,7 +57,7 @@ void TileManager::CreateTile(int row, int column)
     newTile->sprite->y = gridSpaces[row][column]->y;
 }
 
-void TileManager::MoveTiles(MoveDirection direction)
+void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
 {   
     bool tilesMoved = false; // Used for figuring out if a new tile should be spawned
 
@@ -93,7 +82,9 @@ void TileManager::MoveTiles(MoveDirection direction)
 
                         tiles[row][rightmostTile] = tiles[row][column];
                         tiles[row][column] = NULL;
-                        tiles[row][rightmostTile]->sprite->x = gridSpaces[row][rightmostTile]->x;
+                        tiles[row][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
+                                                           + (TILE_OFFSET * (rightmostTile + 1))
+                                                           + (TILE_SIZE * rightmostTile);
                         break;
                     }
                     else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
@@ -338,4 +329,21 @@ void TileManager::DrawTiles()
             windowReference.Draw(*tiles[row][column]->sprite, false);
         }
     }
+}
+
+void TileManager::ResetTiles()
+{
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            if (tiles[row][column] == NULL) continue;
+            delete tiles[row][column];
+            tiles[row][column] = NULL;
+        }
+    }
+
+    tileCount = 0;
+    SpawnRandomTile();
+    SpawnRandomTile();
 }
