@@ -19,11 +19,11 @@ TileManager::TileManager(RenderWindow& window, UIManager& UIManager)
     {
         for (int column = 0; column < 4; column++)
         {
-            gridSpaces[row][column] = new Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
+            gridSpaces[row][column] = Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
                                                  BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
                                                  TILE_SIZE,
                                                  TILE_SIZE);  
-            gridSpaces[row][column]->texture = window.LoadTexture("assets/gfx/grid_space.png");
+            gridSpaces[row][column].texture = window.LoadTexture("assets/gfx/grid_space.png");
         }
     }
 
@@ -53,8 +53,8 @@ void TileManager::CreateTile(int row, int column)
     tiles[row][column] = new Tile(TILE_SIZE);
     Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
-    newTile->sprite->x = gridSpaces[row][column]->x;
-    newTile->sprite->y = gridSpaces[row][column]->y;
+    newTile->sprite->x = gridSpaces[row][column].x;
+    newTile->sprite->y = gridSpaces[row][column].y;
 }
 
 void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
@@ -314,7 +314,7 @@ void TileManager::DrawGrid()
     {
         for (int column = 0; column < 4; column++)
         {
-            windowReference.Draw(*gridSpaces[row][column], false);
+            windowReference.Draw(gridSpaces[row][column], false);
         }
     }
 }

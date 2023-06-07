@@ -35,7 +35,7 @@ public:
 public:
     Sprite gridBackground;
     
-    Sprite* gridSpaces[4][4] = {};
+    Sprite gridSpaces[4][4] = {};
     Tile* tiles[4][4] = {};
 private:
     void SpawnRandomTile();
