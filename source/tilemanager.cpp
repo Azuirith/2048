@@ -1,10 +1,10 @@
-#include <iostream>
+#include <iostream> // DELETE
 #include <cstdlib>
 #include <ctime>
 
+#include "TileManager.hpp"
 #include "RenderWindow.hpp"
 #include "UIManager.hpp"
-#include "TileManager.hpp"
 #include "Tile.hpp"
 
 TileManager::TileManager(RenderWindow& window, UIManager& UIManager) 
@@ -19,11 +19,14 @@ TileManager::TileManager(RenderWindow& window, UIManager& UIManager)
     {
         for (int column = 0; column < 4; column++)
         {
-            gridSpaces[row][column] = Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
+            gridSpaces[row][column] = new GridSpace();
+            gridSpaces[row][column]->row = row;
+            gridSpaces[row][column]->column = column;
+            gridSpaces[row][column]->sprite = new Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
                                                  BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
                                                  TILE_SIZE,
                                                  TILE_SIZE);  
-            gridSpaces[row][column].texture = window.LoadTexture("assets/gfx/grid_space.png");
+            gridSpaces[row][column]->sprite->texture = window.LoadTexture("assets/gfx/grid_space.png");
         }
     }
 
@@ -51,15 +54,16 @@ void TileManager::LoadTileSprites()
 void TileManager::CreateTile(int row, int column)
 {
     tiles[row][column] = new Tile(TILE_SIZE);
+    gridSpaces[row][column]->occupyingTile = tiles[row][column];
     Tile* newTile = tiles[row][column];
     newTile->sprite->texture = tileSprites[2];
-    newTile->sprite->x = gridSpaces[row][column].x;
-    newTile->sprite->y = gridSpaces[row][column].y;
+    newTile->sprite->x = gridSpaces[row][column]->sprite->x;
+    newTile->sprite->y = gridSpaces[row][column]->sprite->y;
 }
 
-void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
+void TileManager::SetTileDestinations(MoveDirection direction, bool& tilesMoving)
 {   
-    bool tilesMoved = false; // Used for figuring out if a new tile should be spawned
+    bool tilesWillMove = false; // Used for figuring out if a new tile should be spawned
 
     if (direction == MoveDirection::RIGHT)
     {
@@ -78,28 +82,14 @@ void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
                 {
                     if (tiles[row][rightmostTile] == NULL)
                     {
-                        tilesMoved = true;
-
-                        tiles[row][rightmostTile] = tiles[row][column];
-                        tiles[row][column] = NULL;
-                        tiles[row][rightmostTile]->sprite->x = BORDER_HORIZONTAL 
-                                                           + (TILE_OFFSET * (rightmostTile + 1))
-                                                           + (TILE_SIZE * rightmostTile);
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[row][rightmostTile];
                         break;
                     }
                     else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
                     {
-                        tilesMoved = true;
-
-                        int newTileValue = tiles[row][column]->value * 2;
-                        UIManagerReference.UpdateScore(newTileValue);
-                        delete tiles[row][column];
-                        tiles[row][column] = NULL; 
-                        tileCount--;
-
-                        tiles[row][rightmostTile]->value = newTileValue;
-                        tiles[row][rightmostTile]->sprite->texture = tileSprites[newTileValue]; 
-
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[row][rightmostTile];
                         if (rightmostTile == 3) rightmostTile--; // Done so that the rightmost tile can't change
                         // values twice in one move
                         break;
@@ -123,30 +113,16 @@ void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
                 {
                     if (tiles[row][leftmostTile] == NULL)
                     {
-                        tilesMoved = true;
-
-                        tiles[row][leftmostTile] = tiles[row][column];
-                        tiles[row][column] = NULL;
-                        tiles[row][leftmostTile]->sprite->x = BORDER_HORIZONTAL 
-                                                           + (TILE_OFFSET * (leftmostTile + 1))
-                                                           + (TILE_SIZE * leftmostTile);
+                        tilesWillMove = true; 
+                        tiles[row][column]->targetGridSpace = gridSpaces[row][leftmostTile];
                         break;
                     }
                     // Checks if leftmost tile or the tile directly to the left of the current tile
                     // has the same value
                     else if (tiles[row][leftmostTile]->value == tiles[row][column]->value)
                     {
-                        tilesMoved = true;
-
-                        int newTileValue = tiles[row][column]->value * 2;
-                        UIManagerReference.UpdateScore(newTileValue);
-                        delete tiles[row][column];
-                        tiles[row][column] = NULL; 
-                        tileCount--;
-
-                        tiles[row][leftmostTile]->value = newTileValue;
-                        tiles[row][leftmostTile]->sprite->texture = tileSprites[newTileValue]; 
-
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[row][leftmostTile];
                         if (leftmostTile == 0) leftmostTile++;   
                         break;
                     }
@@ -171,28 +147,14 @@ void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
                 {
                     if (tiles[topmostTile][column] == NULL)
                     {
-                        tilesMoved = true;
-
-                        tiles[topmostTile][column] = tiles[row][column];
-                        tiles[row][column] = NULL;
-                        tiles[topmostTile][column]->sprite->y = BORDER_VERTICAL 
-                                                           + (TILE_OFFSET * (topmostTile + 1))
-                                                           + (TILE_SIZE * topmostTile);
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[topmostTile][column];
                         break;
                     }
                     else if (tiles[topmostTile][column]->value == tiles[row][column]->value)
                     {
-                        tilesMoved = true;
-
-                        int newTileValue = tiles[row][column]->value * 2;
-                        UIManagerReference.UpdateScore(newTileValue);
-                        delete tiles[row][column];
-                        tiles[row][column] = NULL; 
-                        tileCount--;
-
-                        tiles[topmostTile][column]->value = newTileValue;
-                        tiles[topmostTile][column]->sprite->texture = tileSprites[newTileValue]; 
-
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[topmostTile][column];
                         if (topmostTile == 0) topmostTile++;         
                         break;
                     }
@@ -215,28 +177,14 @@ void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
                 {
                     if (tiles[bottommostTile][column] == NULL)
                     {
-                        tilesMoved = true;
-
-                        tiles[bottommostTile][column] = tiles[row][column];
-                        tiles[row][column] = NULL;
-                        tiles[bottommostTile][column]->sprite->y = BORDER_VERTICAL 
-                                                           + (TILE_OFFSET * (bottommostTile + 1))
-                                                           + (TILE_SIZE * bottommostTile);
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[bottommostTile][column];
                         break;
                     }
                     else if (tiles[bottommostTile][column]->value == tiles[row][column]->value)
                     {
-                        tilesMoved = true;
-
-                        int newTileValue = tiles[row][column]->value * 2;
-                        UIManagerReference.UpdateScore(newTileValue);
-                        delete tiles[row][column];
-                        tiles[row][column] = NULL; 
-                        tileCount--;
-
-                        tiles[bottommostTile][column]->value = newTileValue;
-                        tiles[bottommostTile][column]->sprite->texture = tileSprites[newTileValue];  
-
+                        tilesWillMove = true;
+                        tiles[row][column]->targetGridSpace = gridSpaces[bottommostTile][column];
                         if (bottommostTile == 3) bottommostTile--; 
                         break;
                     }
@@ -247,14 +195,7 @@ void TileManager::MoveTiles(MoveDirection direction, bool& tilesMoving)
         }
     }
 
-    if (tileCount < 16 && tilesMoved) 
-    {
-        SpawnRandomTile();
-    }
-    else if (tileCount == 16 && !PlayerHasAvailableMoves())
-    {
-        UIManagerReference.UpdateHighScore();
-    }
+    tilesMoving = tilesWillMove;
 }
 
 void TileManager::SpawnRandomTile()
@@ -314,8 +255,64 @@ void TileManager::DrawGrid()
     {
         for (int column = 0; column < 4; column++)
         {
-            windowReference.Draw(gridSpaces[row][column], false);
+            windowReference.Draw(*gridSpaces[row][column]->sprite, false);
         }
+    }
+}
+
+void TileManager::MoveTiles(float deltaTime, bool& tilesMoving)
+{
+    bool allTilesMoved = true;
+
+    for (int row = 0; row < 4; row++)
+    {
+        for (int column = 0; column < 4; column++)
+        {
+            Tile* tile = tiles[row][column];
+            if (tile == NULL || tile->targetGridSpace == NULL) continue;
+
+            bool reachedGoal;
+            tile->Move(deltaTime, reachedGoal);
+
+            if (!reachedGoal)
+            {
+                allTilesMoved = false;
+                continue;
+            }
+
+            // I think that there is an incongruency between the actual tiles array and the grid spaces array
+            // that is causing the issue
+            // could be wrong though just try and work off of that
+            // SO CLOSE
+            if (tile->targetGridSpace->occupyingTile != NULL) 
+            {
+                tile->targetGridSpace->occupyingTile = NULL;
+                tile->value *= 2;
+                tile->sprite->texture = tileSprites[tile->value];
+            }
+
+            tile->targetGridSpace->occupyingTile = tile;
+            int newRow = tile->targetGridSpace->row;
+            int newColumn = tile->targetGridSpace->column;
+            tiles[newRow][newColumn] = tile;
+            tiles[row][column] = NULL;
+            tile->targetGridSpace = NULL;
+
+            std::cout << "Row " << row << " and column " << column << " of tiles: " << tiles[row][column] << std::endl;
+            std::cout << "Row " << row << " and column " << column << " of gridSpaces: " << gridSpaces[row][column] << std::endl;
+            std::cout << "New row " << newRow << " and new column " << newColumn << " of tiles: " << tiles[newRow][newColumn] << std::endl;
+            std::cout << "New row " << newRow << " and new column " << newColumn << " of gridSpaces: " << gridSpaces[newRow][newColumn] << std::endl;
+        }
+    }
+
+    tilesMoving = !allTilesMoved;
+    if (tileCount < 16 && allTilesMoved)
+    { 
+        SpawnRandomTile();
+    }
+    else if (tileCount == 16 && !PlayerHasAvailableMoves())
+    {
+        UIManagerReference.UpdateHighScore();
     }
 }
 

@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
     UIManager UIManager(window);
     TileManager tileManager(window, UIManager);
 
-    float lastFrameTime = 0.f, currentFrameTime;
-    float accumulator = 0.f;
+    float lastTime = 0.f, currentTime;
+    float deltaTime = 0.f;
 
     bool gameRunning = true;
     bool tilesMoving = false;
@@ -48,36 +48,38 @@ int main(int argc, char* argv[])
             }
             else if (event.type == SDL_KEYDOWN)
             {
-                if (tilesMoving) continue;
-
-                // Registers both WASD and arrow keys
-                if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
-                    tileManager.MoveTiles(TileManager::MoveDirection::UP, tilesMoving);
-                else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::LEFT, tilesMoving);
-                else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
-                    tileManager.MoveTiles(TileManager::MoveDirection::DOWN, tilesMoving);
-                else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
-                    tileManager.MoveTiles(TileManager::MoveDirection::RIGHT, tilesMoving);
-
                 if (event.key.keysym.sym == SDLK_r) // Restart
                 {
                     UIManager.ResetScore();
                     tileManager.ResetTiles();
+                    tilesMoving = false;
                 }
+
+                if (tilesMoving) continue;
+
+                // Registers both WASD and arrow keys
+                if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP)
+                    tileManager.SetTileDestinations(TileManager::MoveDirection::UP, tilesMoving);
+                else if (event.key.keysym.sym == SDLK_a || event.key.keysym.sym == SDLK_LEFT)
+                    tileManager.SetTileDestinations(TileManager::MoveDirection::LEFT, tilesMoving);
+                else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN)
+                    tileManager.SetTileDestinations(TileManager::MoveDirection::DOWN, tilesMoving);
+                else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_RIGHT)
+                    tileManager.SetTileDestinations(TileManager::MoveDirection::RIGHT, tilesMoving);
             }
         }
 
-        currentFrameTime = SDL_GetTicks();
-        float deltaTime = (currentFrameTime - lastFrameTime) / 1000;
-        accumulator += deltaTime;
-        lastFrameTime = currentFrameTime;
+        currentTime = SDL_GetTicks();
+        float timeSinceLastLoop = (currentTime - lastTime) / 1000;
+        deltaTime += timeSinceLastLoop;
+        lastTime = currentTime;
 
-        while (accumulator >= FPS)
+        if (deltaTime >= FPS)
         {   
             window.Clear();
 
             tileManager.DrawGrid();
+            if (tilesMoving) tileManager.MoveTiles(deltaTime, tilesMoving);
             tileManager.DrawTiles();
 
             UIManager.DrawScore();
@@ -86,7 +88,7 @@ int main(int argc, char* argv[])
 
             window.Update();
 
-            accumulator -= FPS;
+            deltaTime = 0;
         }
     }
 

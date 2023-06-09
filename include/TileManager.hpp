@@ -5,6 +5,7 @@
 #include "RenderWindow.hpp"
 #include "UIManager.hpp"
 #include "Sprite.hpp"
+#include "GridSpace.hpp"
 #include "Tile.hpp"
 
 #define BORDER_HORIZONTAL 150.f
@@ -25,18 +26,21 @@ public:
 
     void LoadTileSprites();
     void CreateTile(int column, int row);
-    void MoveTiles(MoveDirection direction, bool& tilesMoving);
+    void SetTileDestinations(MoveDirection direction, bool& tilesMoving);
     bool PlayerHasAvailableMoves();
 
     void DrawGrid();
-    void DrawTiles();
 
+    void MoveTiles(float deltaTime, bool& tilesMoving);
+    void DrawTiles();
     void ResetTiles(); 
 public:
     Sprite gridBackground;
     
-    Sprite gridSpaces[4][4] = {};
+    GridSpace* gridSpaces[4][4] = {};
     Tile* tiles[4][4] = {};
+
+    std::map<int, SDL_Texture*> tileSprites;
 private:
     void SpawnRandomTile();
 private:
@@ -44,8 +48,6 @@ private:
     UIManager& UIManagerReference;
 
     const float TILE_SIZE = (BORDER_WIDTH / 4.f) - ((5.f / 4.f) * TILE_OFFSET);
-
-    std::map<int, SDL_Texture*> tileSprites;
 
     int tileCount = 0;
     
