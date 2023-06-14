@@ -20,12 +20,12 @@ RenderWindow::RenderWindow(const char* title, int width, int height)
                               width, height,
                               0);
 
-    if (window == NULL)
+    if (window == nullptr)
         std::cout << "Error: Window has failed to init. Error message: " << SDL_GetError() << std::endl;
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    if (renderer == NULL)
+    if (renderer == nullptr)
         std::cout << "Error: Renderer has failed to init. Error message: " << SDL_GetError() << std::endl;
 
     SDL_SetRenderDrawColor(renderer, WINDOW_COLOR_R, WINDOW_COLOR_G, WINDOW_COLOR_B, WINDOW_COLOR_A);
@@ -36,7 +36,7 @@ SDL_Texture* RenderWindow::LoadTexture(const char* filePath)
     SDL_Texture* texture;
     texture = IMG_LoadTexture(renderer, filePath);
 
-    if (texture == NULL)
+    if (texture == nullptr)
         std::cout << "Error: LoadTexture has failed. Error message: " << SDL_GetError() << std::endl;
 
     return texture;
@@ -47,7 +47,7 @@ SDL_Texture* RenderWindow::CreateTextureFromSurface(SDL_Surface* surface)
     SDL_Texture* texture;
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-    if (texture == NULL)
+    if (texture == nullptr)
         std::cout << "Error: CreateTextureFromSurface has failed. Error message: " << SDL_GetError() << std::endl;
 
     return texture;
@@ -69,7 +69,7 @@ void RenderWindow::Draw(Sprite& sprite, bool isText)
     // Done because text does not have the same resoultion as other sprites
     if (isText)
     {
-        SDL_RenderCopy(renderer, sprite.texture, NULL, &destination);
+        SDL_RenderCopy(renderer, sprite.texture, nullptr, &destination);
         return;
     }
     

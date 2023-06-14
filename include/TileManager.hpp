@@ -38,7 +38,6 @@ public:
     Sprite gridBackground;
     
     GridSpace* gridSpaces[4][4] = {};
-    Tile* tiles[4][4] = {};
 
     std::map<int, SDL_Texture*> tileSprites;
 private:

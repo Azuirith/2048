@@ -8,11 +8,9 @@ struct Tile; // Prevents errors because I'm including GridSpace and Tile into ea
 
 struct GridSpace
 {
-    int row;
-    int column;
+    Sprite sprite;
+    Tile* occupyingTile = nullptr;
+    Tile* queuedTile = nullptr;
 
-    Sprite* sprite;
-    Tile* occupyingTile = NULL;
-
-    ~GridSpace();
+    void MoveTile(float deltaTime, Tile* tile, bool& doneMoving);
 };

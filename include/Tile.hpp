@@ -3,7 +3,7 @@
 #include "Sprite.hpp"
 #include "GridSpace.hpp"
 
-#define TILE_SPEED 5000
+#define TILE_SPEED 4000
 
 #define TILE_START_VALUE 2
 
@@ -13,10 +13,6 @@ struct Tile
 {
     Tile(int size);
 
-    Sprite* sprite;
+    Sprite sprite;
     int value = TILE_START_VALUE;
-
-    GridSpace* targetGridSpace = NULL;
-
-    void Move(float deltaTime, bool& reachedGoal);
 };

@@ -1,4 +1,3 @@
-#include <iostream> // DELETE
 #include <cstdlib>
 #include <ctime>
 
@@ -20,24 +19,22 @@ TileManager::TileManager(RenderWindow& window, UIManager& UIManager)
         for (int column = 0; column < 4; column++)
         {
             gridSpaces[row][column] = new GridSpace();
-            gridSpaces[row][column]->row = row;
-            gridSpaces[row][column]->column = column;
-            gridSpaces[row][column]->sprite = new Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
+            gridSpaces[row][column]->sprite = Sprite((BORDER_HORIZONTAL + (TILE_OFFSET * (column + 1)) + (TILE_SIZE * column)),
                                                  BORDER_VERTICAL + (TILE_OFFSET * (row + 1)) + (TILE_SIZE * row), 
                                                  TILE_SIZE,
                                                  TILE_SIZE);  
-            gridSpaces[row][column]->sprite->texture = window.LoadTexture("assets/gfx/grid_space.png");
+            gridSpaces[row][column]->sprite.texture = window.LoadTexture("assets/gfx/grid_space.png");
         }
     }
 
     LoadTileSprites();
+
     SpawnRandomTile();
     SpawnRandomTile();
 }
 
 void TileManager::LoadTileSprites()
 {
-    // I know I could use a loop for this
     tileSprites[2] = windowReference.LoadTexture("assets/gfx/2_tile.png");
     tileSprites[4] = windowReference.LoadTexture("assets/gfx/4_tile.png");
     tileSprites[8] = windowReference.LoadTexture("assets/gfx/8_tile.png");
@@ -52,50 +49,48 @@ void TileManager::LoadTileSprites()
 }
 
 void TileManager::CreateTile(int row, int column)
-{
-    tiles[row][column] = new Tile(TILE_SIZE);
-    gridSpaces[row][column]->occupyingTile = tiles[row][column];
-    Tile* newTile = tiles[row][column];
-    newTile->sprite->texture = tileSprites[2];
-    newTile->sprite->x = gridSpaces[row][column]->sprite->x;
-    newTile->sprite->y = gridSpaces[row][column]->sprite->y;
+{ 
+    gridSpaces[row][column]->occupyingTile = new Tile(TILE_SIZE);
+    Tile* newTile = gridSpaces[row][column]->occupyingTile;
+    newTile->sprite.texture = tileSprites[2];
+    newTile->sprite.x = gridSpaces[row][column]->sprite.x;
+    newTile->sprite.y = gridSpaces[row][column]->sprite.y;
 }
 
 void TileManager::SetTileDestinations(MoveDirection direction, bool& tilesMoving)
-{   
-    bool tilesWillMove = false; // Used for figuring out if a new tile should be spawned
-
+{  
     if (direction == MoveDirection::RIGHT)
     {
         for (int row = 0; row < 4; row++)
         {
-            int rightmostTile = 3;
+            int rightmostColumn = 3;
             for (int column = 2; column >= 0; column--)
-            {         
-                if (!tiles[row][column]) continue;
+            {       
+                GridSpace* currentSpace = gridSpaces[row][column];
+                if (currentSpace->occupyingTile == nullptr) continue;   
 
-                // Loops through all possible tiles to the right to find the rightmost space that the current
-                // tile can move to or the rightmost tile that the current tile can combine with 
-                // This chunk of code is a lot more compact than the original version but it also makes a lot 
-                // less sense when just looking at it
-                while (rightmostTile > column)
+                while (rightmostColumn > column)
                 {
-                    if (tiles[row][rightmostTile] == NULL)
+                    GridSpace* rightmostSpace = gridSpaces[row][rightmostColumn];
+                    if (rightmostSpace->occupyingTile == nullptr)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[row][rightmostTile];
+                        tilesMoving = true;
+                        rightmostSpace->occupyingTile = currentSpace->occupyingTile;
+                        currentSpace->occupyingTile = nullptr;
                         break;
                     }
-                    else if (tiles[row][rightmostTile]->value == tiles[row][column]->value)
+                    else if (rightmostSpace->occupyingTile->value == currentSpace->occupyingTile->value)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[row][rightmostTile];
-                        if (rightmostTile == 3) rightmostTile--; // Done so that the rightmost tile can't change
-                        // values twice in one move
+                        tilesMoving = true;
+                        rightmostSpace->queuedTile = currentSpace->occupyingTile;
+                        rightmostSpace->occupyingTile->value *= 2;
+                        currentSpace->occupyingTile = nullptr;
+                        rightmostColumn--; // Done so that the rightmost tile 
+                                                                     // can't change values twice in one move
                         break;
                     }
         
-                    rightmostTile--;
+                    rightmostColumn--;
                 }
             }
         }
@@ -104,30 +99,35 @@ void TileManager::SetTileDestinations(MoveDirection direction, bool& tilesMoving
     {
         for (int row = 0; row < 4; row++)
         {
-            int leftmostTile = 0;
+            int leftmostColumn = 0;
             for (int column = 1; column < 4; column++)
             {
-                if (!tiles[row][column]) continue;
+                GridSpace* currentSpace = gridSpaces[row][column];
+                if (currentSpace->occupyingTile == nullptr) continue;
 
-                while (leftmostTile < column)
+                while (leftmostColumn < column)
                 {
-                    if (tiles[row][leftmostTile] == NULL)
+                    GridSpace* leftmostSpace = gridSpaces[row][leftmostColumn]; 
+                    if (leftmostSpace->occupyingTile == nullptr)
                     {
-                        tilesWillMove = true; 
-                        tiles[row][column]->targetGridSpace = gridSpaces[row][leftmostTile];
+                        tilesMoving = true;
+                        leftmostSpace->occupyingTile = currentSpace->occupyingTile;
+                        currentSpace->occupyingTile = nullptr;
                         break;
                     }
                     // Checks if leftmost tile or the tile directly to the left of the current tile
                     // has the same value
-                    else if (tiles[row][leftmostTile]->value == tiles[row][column]->value)
+                    else if (leftmostSpace->occupyingTile->value == currentSpace->occupyingTile->value)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[row][leftmostTile];
-                        if (leftmostTile == 0) leftmostTile++;   
+                        tilesMoving = true;
+                        leftmostSpace->queuedTile = currentSpace->occupyingTile;
+                        leftmostSpace->occupyingTile->value *= 2;
+                        currentSpace->occupyingTile = nullptr;
+                        leftmostColumn++;   
                         break;
                     }
                     
-                    leftmostTile++;
+                    leftmostColumn++;
                 }
             }
         }
@@ -138,28 +138,33 @@ void TileManager::SetTileDestinations(MoveDirection direction, bool& tilesMoving
         // in the same way that it does with the RIGHT direction and the LEFT direction
         for (int column = 0; column < 4; column++)
         {
-            int topmostTile = 0;
+            int topmostRow = 0;
             for (int row = 1; row < 4; row++)
             {
-                if (!tiles[row][column]) continue;
+                GridSpace* currentSpace = gridSpaces[row][column];
+                if (currentSpace->occupyingTile == nullptr) continue;
 
-                while (topmostTile < row)
+                while (topmostRow < row)
                 {
-                    if (tiles[topmostTile][column] == NULL)
+                    GridSpace* topmostSpace = gridSpaces[topmostRow][column];
+                    if (topmostSpace->occupyingTile == nullptr)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[topmostTile][column];
+                        tilesMoving = true;
+                        topmostSpace->occupyingTile = currentSpace->occupyingTile;
+                        currentSpace->occupyingTile = nullptr;
                         break;
                     }
-                    else if (tiles[topmostTile][column]->value == tiles[row][column]->value)
+                    else if (topmostSpace->occupyingTile->value == currentSpace->occupyingTile->value)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[topmostTile][column];
-                        if (topmostTile == 0) topmostTile++;         
+                        tilesMoving = true;
+                        topmostSpace->queuedTile = currentSpace->occupyingTile;
+                        topmostSpace->occupyingTile->value *= 2;
+                        currentSpace->occupyingTile = nullptr;
+                        topmostRow++;         
                         break;
                     }
                     
-                    topmostTile++;
+                    topmostRow++;
                 }
             }
         }
@@ -168,34 +173,37 @@ void TileManager::SetTileDestinations(MoveDirection direction, bool& tilesMoving
     {
         for (int column = 0; column < 4; column++)
         {
-            int bottommostTile = 3;
+            int bottommostRow = 3;
             for (int row = 2; row >= 0; row--)
             {
-                if (!tiles[row][column]) continue;
+                GridSpace* currentSpace = gridSpaces[row][column];
+                if (currentSpace->occupyingTile == nullptr) continue;
 
-                while (bottommostTile > row)
+                while (bottommostRow > row)
                 {
-                    if (tiles[bottommostTile][column] == NULL)
+                    GridSpace* bottommostSpace = gridSpaces[bottommostRow][column];
+                    if (bottommostSpace->occupyingTile == nullptr)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[bottommostTile][column];
+                        tilesMoving = true;
+                        bottommostSpace->occupyingTile = currentSpace->occupyingTile;
+                        currentSpace->occupyingTile = nullptr;
                         break;
                     }
-                    else if (tiles[bottommostTile][column]->value == tiles[row][column]->value)
+                    else if (bottommostSpace->occupyingTile->value == currentSpace->occupyingTile->value)
                     {
-                        tilesWillMove = true;
-                        tiles[row][column]->targetGridSpace = gridSpaces[bottommostTile][column];
-                        if (bottommostTile == 3) bottommostTile--; 
+                        tilesMoving = true;
+                        bottommostSpace->queuedTile = currentSpace->occupyingTile;
+                        bottommostSpace->occupyingTile->value *= 2;
+                        currentSpace->occupyingTile = nullptr;
+                        bottommostRow--; 
                         break;
                     }
 
-                    bottommostTile--;
+                    bottommostRow--;
                 }
             }
         }
     }
-
-    tilesMoving = tilesWillMove;
 }
 
 void TileManager::SpawnRandomTile()
@@ -203,7 +211,7 @@ void TileManager::SpawnRandomTile()
     int randomRow = rand() % 4;
     int randomColumn = rand() % 4;
 
-    if (tiles[randomRow][randomColumn]) 
+    if (gridSpaces[randomRow][randomColumn]->occupyingTile != nullptr) 
     {
         SpawnRandomTile();
     }
@@ -221,32 +229,6 @@ void TileManager::SpawnRandomTile()
     }
 }
 
-bool TileManager::PlayerHasAvailableMoves()
-{
-    for (int row = 0; row < 4; row++)
-    {
-        for (int column = 0; column < 4; column++)
-        {
-            Tile* currentTile = tiles[row][column];
-            Tile* rightTile = NULL; 
-            Tile* downTile = NULL;
-
-            if (column + 1 < 4) rightTile = tiles[row][column + 1];
-            if (row + 1 < 4) downTile = tiles[row + 1][column];
-
-            if (rightTile != NULL)
-            {
-                if (currentTile->value == rightTile->value) return true;
-            }
-            if (downTile != NULL)
-            {
-                if (currentTile->value == downTile->value) return true;
-            }
-        }
-    }
-    return false;
-}
-
 void TileManager::DrawGrid()
 {
     windowReference.Draw(gridBackground, false);
@@ -255,53 +237,40 @@ void TileManager::DrawGrid()
     {
         for (int column = 0; column < 4; column++)
         {
-            windowReference.Draw(*gridSpaces[row][column]->sprite, false);
+            windowReference.Draw(gridSpaces[row][column]->sprite, false);
         }
     }
 }
 
 void TileManager::MoveTiles(float deltaTime, bool& tilesMoving)
-{
+{ 
+    // There's some issue with the tileCount variable I'm not sure what though
     bool allTilesMoved = true;
 
     for (int row = 0; row < 4; row++)
     {
         for (int column = 0; column < 4; column++)
         {
-            Tile* tile = tiles[row][column];
-            if (tile == NULL || tile->targetGridSpace == NULL) continue;
+            GridSpace* currentSpace = gridSpaces[row][column];
+            if (currentSpace->occupyingTile == nullptr) continue;
 
-            bool reachedGoal;
-            tile->Move(deltaTime, reachedGoal);
+            bool doneMoving = false;
+            bool isTileInQueue = currentSpace->queuedTile != nullptr;
 
-            if (!reachedGoal)
+            currentSpace->MoveTile(deltaTime, currentSpace->occupyingTile, doneMoving);
+            if (isTileInQueue) currentSpace->MoveTile(deltaTime, currentSpace->queuedTile, doneMoving);
+            if (!doneMoving)
             {
                 allTilesMoved = false;
                 continue;
             }
 
-            // I think that there is an incongruency between the actual tiles array and the grid spaces array
-            // that is causing the issue
-            // could be wrong though just try and work off of that
-            // SO CLOSE
-            if (tile->targetGridSpace->occupyingTile != NULL) 
-            {
-                tile->targetGridSpace->occupyingTile = NULL;
-                tile->value *= 2;
-                tile->sprite->texture = tileSprites[tile->value];
-            }
-
-            tile->targetGridSpace->occupyingTile = tile;
-            int newRow = tile->targetGridSpace->row;
-            int newColumn = tile->targetGridSpace->column;
-            tiles[newRow][newColumn] = tile;
-            tiles[row][column] = NULL;
-            tile->targetGridSpace = NULL;
-
-            std::cout << "Row " << row << " and column " << column << " of tiles: " << tiles[row][column] << std::endl;
-            std::cout << "Row " << row << " and column " << column << " of gridSpaces: " << gridSpaces[row][column] << std::endl;
-            std::cout << "New row " << newRow << " and new column " << newColumn << " of tiles: " << tiles[newRow][newColumn] << std::endl;
-            std::cout << "New row " << newRow << " and new column " << newColumn << " of gridSpaces: " << gridSpaces[newRow][newColumn] << std::endl;
+            if (!isTileInQueue) continue;
+            delete currentSpace->queuedTile;
+            tileCount--;       
+            currentSpace->queuedTile = nullptr;
+            UIManagerReference.UpdateScore(currentSpace->occupyingTile->value);
+            currentSpace->occupyingTile->sprite.texture = tileSprites[currentSpace->occupyingTile->value];
         }
     }
 
@@ -309,10 +278,6 @@ void TileManager::MoveTiles(float deltaTime, bool& tilesMoving)
     if (tileCount < 16 && allTilesMoved)
     { 
         SpawnRandomTile();
-    }
-    else if (tileCount == 16 && !PlayerHasAvailableMoves())
-    {
-        UIManagerReference.UpdateHighScore();
     }
 }
 
@@ -322,8 +287,11 @@ void TileManager::DrawTiles()
     {
         for (int column = 0; column < 4; column++)
         {
-            if (tiles[row][column] == NULL) continue;
-            windowReference.Draw(*tiles[row][column]->sprite, false);
+            if (gridSpaces[row][column]->occupyingTile != nullptr)
+                windowReference.Draw(gridSpaces[row][column]->occupyingTile->sprite, false);
+            
+            if (gridSpaces[row][column]->queuedTile != nullptr)
+                windowReference.Draw(gridSpaces[row][column]->queuedTile->sprite, false);
         }
     }
 }
@@ -334,9 +302,16 @@ void TileManager::ResetTiles()
     {
         for (int column = 0; column < 4; column++)
         {
-            if (tiles[row][column] == NULL) continue;
-            delete tiles[row][column];
-            tiles[row][column] = NULL;
+            if (gridSpaces[row][column]->occupyingTile != nullptr)
+            {
+                delete gridSpaces[row][column]->occupyingTile;
+                gridSpaces[row][column]->occupyingTile = nullptr;
+            }
+            if (gridSpaces[row][column]->queuedTile == nullptr)
+            {
+                delete gridSpaces[row][column]->queuedTile;
+                gridSpaces[row][column]->queuedTile = nullptr;
+            }   
         }
     }
 

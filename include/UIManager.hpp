@@ -19,10 +19,11 @@ public:
     void UpdateHighScore();
     void DrawHighScore();
 
+    void UpdateRestartText();
     void DrawRestartText();
 private:
-    void AlignScoreUI();
-    void AlignHighScoreUI();
+    void AdjustScoreUI();
+    void AdjustHighScoreUI();
 private:
     RenderWindow& windowReference;
 

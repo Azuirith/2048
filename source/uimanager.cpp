@@ -9,7 +9,7 @@
 
 UIManager::UIManager(RenderWindow& window) : windowReference(window)
 {
-    // These all are constant values, so they are not in the AlignScoreUI function
+    // These all are constant values, so they are not in the AdjustScoreUI function
     scoreSprite.height = UI_TEXT_HEIGHT;
     scoreSprite.y = SCORE_TEXT_VERTICAL;
     scoreBorderSprite.height = UI_TEXT_HEIGHT;
@@ -25,31 +25,34 @@ UIManager::UIManager(RenderWindow& window) : windowReference(window)
     restartSprite.x = RESTART_TEXT_HORIZONTAL;
     restartSprite.y = RESTART_TEXT_VERTICAL;
 
-    AlignScoreUI();
-    AlignHighScoreUI();
+    FONT = TTF_OpenFont("assets/fonts/JetBrainsMono-ExtraBold.ttf", FONT_SIZE);   
+
+    UpdateScore(0);
+    UpdateHighScore();
+    UpdateRestartText();
+
+    AdjustScoreUI();
+    AdjustHighScoreUI();
 
     SDL_Texture* borderTexture = window.LoadTexture("assets/gfx/grid_background.png"); // Reusing this image
     // because there's absolutely no point in creating a whole new one for it
     scoreBorderSprite.texture = borderTexture; 
     highScoreBorderSprite.texture = borderTexture;
-
-    FONT = TTF_OpenFont("assets/fonts/JetBrainsMono-ExtraBold.ttf", FONT_SIZE);   
 }
 
 void UIManager::UpdateScore(int scoreIncrement)
 {
     score += scoreIncrement;
     scoreString = "Score: " + std::to_string(score);
-    AlignScoreUI();
+    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, scoreString.c_str(), SDL_Color{255, 255, 255, 255});
+    scoreSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
+    SDL_FreeSurface(textSurface);
+    AdjustScoreUI();
 }
 
 void UIManager::DrawScore()
 {
-    // TODO: Fix that this is called every frame
-    // too lazy to do it right now
     windowReference.Draw(scoreBorderSprite, false);
-    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, scoreString.c_str(), SDL_Color{255, 255, 255, 255});
-    scoreSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
     windowReference.Draw(scoreSprite, true);
 }
 
@@ -63,25 +66,32 @@ void UIManager::UpdateHighScore()
 {
     highScore = score;
     highScoreString = "Best: " + std::to_string(highScore);
-    AlignHighScoreUI();
+    if (highScoreSprite.texture != nullptr) SDL_DestroyTexture(highScoreSprite.texture);
+    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, highScoreString.c_str(), SDL_Color{255, 255, 255, 255});
+    highScoreSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
+    SDL_FreeSurface(textSurface);
+    AdjustHighScoreUI();
 }
 
 void UIManager::DrawHighScore()
 {
     windowReference.Draw(highScoreBorderSprite, false);
-    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, highScoreString.c_str(), SDL_Color{255, 255, 255, 255});
-    highScoreSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
     windowReference.Draw(highScoreSprite, true);
+}
+
+void UIManager::UpdateRestartText()
+{
+    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, restartString.c_str(), SDL_Color{187, 173, 160, 255});
+    restartSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
+    SDL_FreeSurface(textSurface);
 }
 
 void UIManager::DrawRestartText()
 {
-    SDL_Surface* textSurface = TTF_RenderText_Blended(FONT, restartString.c_str(), SDL_Color{187, 173, 160, 255});
-    restartSprite.texture = windowReference.CreateTextureFromSurface(textSurface);
     windowReference.Draw(restartSprite, true);
 }
 
-void UIManager::AlignScoreUI()
+void UIManager::AdjustScoreUI()
 {
     scoreSprite.width = UI_TEXT_WIDTH * scoreString.length();
     scoreSprite.x = SCORE_TEXT_HORIZONTAL - (scoreSprite.width / 2); 
@@ -89,7 +99,7 @@ void UIManager::AlignScoreUI()
     scoreBorderSprite.x = scoreSprite.x - (UI_TEXT_WIDTH / 2);
 }
 
-void UIManager::AlignHighScoreUI()
+void UIManager::AdjustHighScoreUI()
 {
     highScoreSprite.width = UI_TEXT_WIDTH * highScoreString.length();
     highScoreSprite.x = HIGH_SCORE_TEXT_HORIZONTAL - (highScoreSprite.width / 2);

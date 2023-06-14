@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
             {
                 if (event.key.keysym.sym == SDLK_r) // Restart
                 {
+                    UIManager.UpdateHighScore();
                     UIManager.ResetScore();
                     tileManager.ResetTiles();
                     tilesMoving = false;
