@@ -1,5 +1,4 @@
 # 2048
-
 (Almost) perfect replica of 2048 game using C++ and the SDL2 library
 
 Gameplay screenshot:
